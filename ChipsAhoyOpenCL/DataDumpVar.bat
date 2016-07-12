@@ -1,0 +1,1 @@
+wget "http://real-chart.finance.yahoo.com/table.csv?s=%1&a=00&b=1&c=%2&ignore=.csv" -O "Markets/%1%2.csv"
