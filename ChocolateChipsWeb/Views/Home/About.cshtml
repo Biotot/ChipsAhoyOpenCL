@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = "About";
+}
+<h2>@ViewBag.Title.</h2>
+<h3>@ViewBag.Message</h3>
+
+<p>Use this area to provide additional information.</p>
+
+@*<button>@Html.ActionLink("THIS TEST THING", "Broker", "LoadBrokers", routeValues: null, htmlAttributes: new { id = "loginLink" })</button>
+<input type="button" value="Go Somewhere Else" onclick="location.href='<%: Url.Action(" LoadBrokers", "Broker" ) %>'"*@
+<input type="button" value="TEST" onclick="location.href='@Url.Action("LoadBrokers", "Broker")'" />

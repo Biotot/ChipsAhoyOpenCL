@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{3ea16351-2514-4c2c-a3f7-b4a9c834106f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts\SyntaxHighlighter">
+      <UniqueIdentifier>{89c1f1fa-3434-4375-a666-6aa6e5918f61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts\SyntaxHighlighter\styles">
+      <UniqueIdentifier>{2538581d-cf75-410a-af22-11f34da85aaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts\SyntaxHighlighter\scripts">
+      <UniqueIdentifier>{cdc816b2-93d7-4520-a863-07abb49e7cc1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OpenCLLoad.cpp">
@@ -27,6 +39,9 @@
     <ClCompile Include="ChipsDB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BrokerLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="CLKernal.cl">
@@ -34,6 +49,141 @@
     </None>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeRDark.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeMidnight.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeMDUltra.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeFadeToGrey.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeEmacs.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeEclipse.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeDjango.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeDefault.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreRDark.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreMidnight.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreMDUltra.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreFadeToGrey.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreEmacs.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreEclipse.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreDjango.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreDefault.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\styles\shCore.css">
+      <Filter>Scripts\SyntaxHighlighter\styles</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shLegacy.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shCore.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushXml.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushVb.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushSql.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushScala.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushSass.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushRuby.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPython.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPowerShell.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPlain.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPhp.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPerl.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushJScript.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushJavaFX.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushJava.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushGroovy.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushErlang.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushDiff.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushDelphi.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushCss.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushCSharp.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushCpp.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushColdFusion.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushBash.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushAS3.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushAppleScript.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="Scripts\SyntaxHighlighter\scripts\shAutoloader.js">
+      <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Structs.h">
@@ -52,6 +202,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BrokerLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

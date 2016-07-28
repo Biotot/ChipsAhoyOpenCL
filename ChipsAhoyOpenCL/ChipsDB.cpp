@@ -3,39 +3,34 @@
 using namespace std;
 
 
-//static char *opt_host_name = "SHKBOX\\SQLEXPRESS"; /* HOST */
-//static char *opt_user_name = "Admin"; /* USERNAME */
-//static char *opt_password = "Admin"; /* PASSWORD */
-//static unsigned int opt_port_num = 3306; /* PORT */
-//static char *opt_socket_name = NULL; /* SOCKET NAME, DO NOT CHANGE */
-//static char *opt_db_name = "DBChocolateChips"; /* DATABASE NAME */
-//static unsigned int opt_flags = 0; /* CONNECTION FLAGS, DO NOT CHANGE */
-//mysqlcppconn-static.lib;
+using boost::property_tree::ptree;
+using boost::property_tree::write_xml;
+using boost::property_tree::xml_writer_settings;
+
+
 ChipsDB::ChipsDB()
 {
-	m_Connected = false;
+	ptree aMarketXML;
+	aMarketXML.add("Market.<xmlattr>.version", "1.0");
+	ptree aMarketStats;
+	aMarketStats.add("MarketName", "test");
+	aMarketStats.add("MarketLength", "testTest");
+	aMarketXML.add_child("Market.Stats", aMarketStats);
+	ptree aMarketTest;
+	aMarketTest.add("MtName", "tst");
+	aMarketTest.add("MarLength", "teTest");
+	ptree aMarketTest2;
+	aMarketTest2.add_child("Market.Stats.BUDDA", aMarketTest);
+	aMarketTest2.add("MtNadfsame", "twgwgwst");
+	aMarketTest2.add("MarLenqgfwgth", "teTggrest");
+	aMarketXML.add_child("Market.ASDG", aMarketTest2);
 
-	sql::mysql::MySQL_Driver *driver;
-	sql::Connection *con;
-	sql::Statement *stmt;
 
-	driver = sql::mysql::get_mysql_driver_instance();
-	con = driver->connect("SHKBOX\\SQLEXPRESS", "Admin", "Admin");
-
-	if (con->isClosed())
-	{
-		cout << "Shit Fucked";
-	}
+	// Note that starting with Boost 1.56, the template argument must be std::string
+	// instead of char
+	write_xml("test.xml", aMarketXML);
 
 
-	stmt = con->createStatement();
-	stmt->execute("USE DBChocolateChips");
-	stmt->execute("DROP TABLE IF EXISTS test");
-	stmt->execute("CREATE TABLE test(id INT, label CHAR(1))");
-	stmt->execute("INSERT INTO test(id, label) VALUES (1, 'a')");
-
-	delete stmt;
-	delete con;
 }
 
 

@@ -99,11 +99,11 @@ MarketLoader::MarketLoader(string tMarketName, int tYear, int tMarketNum)
 				VolumeSums.m_Avg6Month += m_Market.PriceList[y].m_Volume.m_Price;
 				if ((x - y) < THREEMONTH)
 				{
-					OpenSums.m_Avg6Month += m_Market.PriceList[y].m_Open.m_Price;
-					HighSums.m_Avg6Month += m_Market.PriceList[y].m_High.m_Price;
-					LowSums.m_Avg6Month += m_Market.PriceList[y].m_Low.m_Price;
-					CloseSums.m_Avg6Month += m_Market.PriceList[y].m_Close.m_Price;
-					VolumeSums.m_Avg6Month += m_Market.PriceList[y].m_Volume.m_Price;
+					OpenSums.m_Avg3Month += m_Market.PriceList[y].m_Open.m_Price;
+					HighSums.m_Avg3Month += m_Market.PriceList[y].m_High.m_Price;
+					LowSums.m_Avg3Month += m_Market.PriceList[y].m_Low.m_Price;
+					CloseSums.m_Avg3Month += m_Market.PriceList[y].m_Close.m_Price;
+					VolumeSums.m_Avg3Month += m_Market.PriceList[y].m_Volume.m_Price;
 					if ((x - y) < THIRTYDAY)
 					{
 						OpenSums.m_Avg30Day += m_Market.PriceList[y].m_Open.m_Price;
@@ -229,3 +229,4 @@ void MarketLoader::LoadAverages(MarketPrice *tTargetPrice, PriceAverage *tOpen, 
 	tTargetPrice->m_Volume.m_Avg6Month = tVolume->m_Avg6Month / SIXMONTH;
 	tTargetPrice->m_Volume.m_Avg1Year = tVolume->m_Avg1Year / ONEYEAR;
 }
+

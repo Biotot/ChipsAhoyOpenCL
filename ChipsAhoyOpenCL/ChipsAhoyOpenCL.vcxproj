@@ -114,7 +114,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);CPPCONN_PUBLIC_FUNC=</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\AMD APP SDK\3.0\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5;C:\Program Files\MySQL\MySQL Connector C++ 1.1.7\include;</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -171,6 +171,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BrokerLoader.cpp" />
     <ClCompile Include="ChipsDB.cpp" />
     <ClCompile Include="MarketLoader.cpp" />
     <ClCompile Include="OpenCLLoad.cpp" />
@@ -180,8 +181,54 @@
     <None Include="App.config" />
     <None Include="CLKernal.cl" />
     <None Include="packages.config" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shAutoloader.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushAppleScript.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushAS3.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushBash.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushColdFusion.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushCpp.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushCSharp.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushCss.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushDelphi.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushDiff.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushErlang.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushGroovy.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushJava.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushJavaFX.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushJScript.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPerl.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPhp.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPlain.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPowerShell.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushPython.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushRuby.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushSass.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushScala.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushSql.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushVb.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shBrushXml.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shCore.js" />
+    <None Include="Scripts\SyntaxHighlighter\scripts\shLegacy.js" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shCore.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreDefault.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreDjango.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreEclipse.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreEmacs.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreFadeToGrey.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreMDUltra.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreMidnight.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shCoreRDark.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeDefault.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeDjango.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeEclipse.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeEmacs.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeFadeToGrey.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeMDUltra.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeMidnight.css" />
+    <None Include="Scripts\SyntaxHighlighter\styles\shThemeRDark.css" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BrokerLoader.h" />
     <ClInclude Include="ChipsDB.h" />
     <ClInclude Include="MarketLoader.h" />
     <ClInclude Include="OpenCLLoad.h" />

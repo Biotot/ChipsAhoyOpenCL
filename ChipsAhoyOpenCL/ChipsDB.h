@@ -1,5 +1,4 @@
 #pragma once
-#include <afxwin.h> 
 #include <iostream>
 #include "Structs.h"
 #include <vector>
@@ -10,15 +9,11 @@
 #include <stdlib.h>
 #include <string>
 
-#include <windows.h>
+//#include <windows.h>
 
-#include "mysql_connection.h"
-#include "mysql_driver.h"
 
-#include <cppconn/driver.h>
-#include <cppconn/exception.h>
-#include <cppconn/resultset.h>
-#include <cppconn/statement.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
 class ChipsDB
 {

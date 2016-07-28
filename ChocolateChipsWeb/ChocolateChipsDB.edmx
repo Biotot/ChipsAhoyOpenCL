@@ -1,0 +1,407 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="DBChocolateChips.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'DBChocolateChips.dbo.Broker' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="Broker">
+          <Key>
+            <PropertyRef Name="Broker_ID" />
+          </Key>
+          <Property Name="Broker_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Broker_NetWorth" Type="money" />
+          <Property Name="Broker_ProfitPerShare" Type="money" />
+          <Property Name="Broker_TotalShareCount" Type="int" />
+          <Property Name="Broker_NetWorthPerMarket" Type="money" />
+          <Property Name="Broker_Algorithm_Version" Type="int" />
+          <Property Name="Broker_GUID" Type="int" />
+          <Property Name="Broker_Setting_01" Type="float" />
+          <Property Name="Broker_Setting_02" Type="float" />
+          <Property Name="Broker_Setting_03" Type="float" />
+          <Property Name="Broker_Setting_04" Type="float" />
+          <Property Name="Broker_Setting_05" Type="float" />
+          <Property Name="Broker_Setting_06" Type="float" />
+          <Property Name="Broker_Setting_07" Type="float" />
+          <Property Name="Broker_Setting_08" Type="float" />
+          <Property Name="Broker_Setting_09" Type="float" />
+          <Property Name="Broker_Setting_10" Type="float" />
+          <Property Name="Broker_Setting_11" Type="float" />
+          <Property Name="Broker_Setting_12" Type="float" />
+          <Property Name="Broker_Setting_13" Type="float" />
+          <Property Name="Broker_Setting_14" Type="float" />
+          <Property Name="Broker_Setting_15" Type="float" />
+          <Property Name="Broker_Setting_16" Type="float" />
+          <Property Name="Broker_Setting_17" Type="float" />
+          <Property Name="Broker_Setting_18" Type="float" />
+          <Property Name="Broker_Setting_19" Type="float" />
+          <Property Name="Broker_Setting_20" Type="float" />
+          <Property Name="Broker_Setting_21" Type="float" />
+          <Property Name="Broker_Setting_22" Type="float" />
+          <Property Name="Broker_Setting_23" Type="float" />
+          <Property Name="Broker_Setting_24" Type="float" />
+          <Property Name="Broker_Setting_25" Type="float" />
+          <Property Name="Broker_Setting_26" Type="float" />
+          <Property Name="Broker_Setting_27" Type="float" />
+          <Property Name="Broker_Setting_28" Type="float" />
+          <Property Name="Broker_Setting_29" Type="float" />
+          <Property Name="Broker_Setting_30" Type="float" />
+          <Property Name="Broker_Setting_31" Type="float" />
+          <Property Name="Broker_Setting_32" Type="float" />
+          <Property Name="Broker_Setting_33" Type="float" />
+          <Property Name="Broker_Setting_34" Type="float" />
+          <Property Name="Broker_Setting_35" Type="float" />
+          <Property Name="Broker_Setting_36" Type="float" />
+          <Property Name="Broker_Setting_37" Type="float" />
+          <Property Name="Broker_Setting_38" Type="float" />
+          <Property Name="Broker_Setting_39" Type="float" />
+          <Property Name="Broker_Setting_40" Type="float" />
+          <Property Name="Broker_Setting_41" Type="float" />
+          <Property Name="Broker_Setting_42" Type="float" />
+          <Property Name="Broker_Setting_43" Type="float" />
+          <Property Name="Broker_Setting_44" Type="float" />
+          <Property Name="Broker_Setting_45" Type="float" />
+          <Property Name="Broker_Setting_46" Type="float" />
+          <Property Name="Broker_Setting_47" Type="float" />
+          <Property Name="Broker_Setting_48" Type="float" />
+          <Property Name="Broker_Setting_49" Type="float" />
+          <Property Name="Broker_Setting_50" Type="float" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'DBChocolateChips.dbo.Market' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="Market">
+          <Key>
+            <PropertyRef Name="Market_ID" />
+          </Key>
+          <Property Name="Market_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MarketSymbol" Type="nvarchar" MaxLength="50" />
+          <Property Name="MarketName" Type="nvarchar" MaxLength="50" />
+          <Property Name="Market" Type="nchar" MaxLength="10" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'DBChocolateChips.dbo.PricePoint' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="PricePoint">
+          <Key>
+            <PropertyRef Name="PricePoint_ID" />
+          </Key>
+          <Property Name="PricePoint_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Market_ID" Type="int" />
+          <Property Name="Market_Name" Type="nvarchar" MaxLength="50" />
+          <Property Name="PricePoint_Timestamp" Type="timestamp" StoreGeneratedPattern="Computed" />
+          <Property Name="PricePoint_Open" Type="money" />
+          <Property Name="PricePoint_Close" Type="money" />
+          <Property Name="PricePoint_High" Type="money" />
+          <Property Name="PricePoint_Low" Type="money" />
+          <Property Name="PricePoint_Buy" Type="int" />
+          <Property Name="PricePoint_Sell" Type="int" />
+          <Property Name="PricePoint_SellAll" Type="int" />
+          <Property Name="PricePoint_SellSplit" Type="int" />
+        </EntityType>
+        <EntityContainer Name="DBChocolateChipsStoreContainer">
+          <EntitySet Name="Broker" EntityType="Self.Broker" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [Broker].[Broker_ID] AS [Broker_ID], 
+    [Broker].[Broker_NetWorth] AS [Broker_NetWorth], 
+    [Broker].[Broker_ProfitPerShare] AS [Broker_ProfitPerShare], 
+    [Broker].[Broker_TotalShareCount] AS [Broker_TotalShareCount], 
+    [Broker].[Broker_NetWorthPerMarket] AS [Broker_NetWorthPerMarket], 
+    [Broker].[Broker_Algorithm_Version] AS [Broker_Algorithm_Version], 
+    [Broker].[Broker_GUID] AS [Broker_GUID], 
+    [Broker].[Broker_Setting_01] AS [Broker_Setting_01], 
+    [Broker].[Broker_Setting_02] AS [Broker_Setting_02], 
+    [Broker].[Broker_Setting_03] AS [Broker_Setting_03], 
+    [Broker].[Broker_Setting_04] AS [Broker_Setting_04], 
+    [Broker].[Broker_Setting_05] AS [Broker_Setting_05], 
+    [Broker].[Broker_Setting_06] AS [Broker_Setting_06], 
+    [Broker].[Broker_Setting_07] AS [Broker_Setting_07], 
+    [Broker].[Broker_Setting_08] AS [Broker_Setting_08], 
+    [Broker].[Broker_Setting_09] AS [Broker_Setting_09], 
+    [Broker].[Broker_Setting_10] AS [Broker_Setting_10], 
+    [Broker].[Broker_Setting_11] AS [Broker_Setting_11], 
+    [Broker].[Broker_Setting_12] AS [Broker_Setting_12], 
+    [Broker].[Broker_Setting_13] AS [Broker_Setting_13], 
+    [Broker].[Broker_Setting_14] AS [Broker_Setting_14], 
+    [Broker].[Broker_Setting_15] AS [Broker_Setting_15], 
+    [Broker].[Broker_Setting_16] AS [Broker_Setting_16], 
+    [Broker].[Broker_Setting_17] AS [Broker_Setting_17], 
+    [Broker].[Broker_Setting_18] AS [Broker_Setting_18], 
+    [Broker].[Broker_Setting_19] AS [Broker_Setting_19], 
+    [Broker].[Broker_Setting_20] AS [Broker_Setting_20], 
+    [Broker].[Broker_Setting_21] AS [Broker_Setting_21], 
+    [Broker].[Broker_Setting_22] AS [Broker_Setting_22], 
+    [Broker].[Broker_Setting_23] AS [Broker_Setting_23], 
+    [Broker].[Broker_Setting_24] AS [Broker_Setting_24], 
+    [Broker].[Broker_Setting_25] AS [Broker_Setting_25], 
+    [Broker].[Broker_Setting_26] AS [Broker_Setting_26], 
+    [Broker].[Broker_Setting_27] AS [Broker_Setting_27], 
+    [Broker].[Broker_Setting_28] AS [Broker_Setting_28], 
+    [Broker].[Broker_Setting_29] AS [Broker_Setting_29], 
+    [Broker].[Broker_Setting_30] AS [Broker_Setting_30], 
+    [Broker].[Broker_Setting_31] AS [Broker_Setting_31], 
+    [Broker].[Broker_Setting_32] AS [Broker_Setting_32], 
+    [Broker].[Broker_Setting_33] AS [Broker_Setting_33], 
+    [Broker].[Broker_Setting_34] AS [Broker_Setting_34], 
+    [Broker].[Broker_Setting_35] AS [Broker_Setting_35], 
+    [Broker].[Broker_Setting_36] AS [Broker_Setting_36], 
+    [Broker].[Broker_Setting_37] AS [Broker_Setting_37], 
+    [Broker].[Broker_Setting_38] AS [Broker_Setting_38], 
+    [Broker].[Broker_Setting_39] AS [Broker_Setting_39], 
+    [Broker].[Broker_Setting_40] AS [Broker_Setting_40], 
+    [Broker].[Broker_Setting_41] AS [Broker_Setting_41], 
+    [Broker].[Broker_Setting_42] AS [Broker_Setting_42], 
+    [Broker].[Broker_Setting_43] AS [Broker_Setting_43], 
+    [Broker].[Broker_Setting_44] AS [Broker_Setting_44], 
+    [Broker].[Broker_Setting_45] AS [Broker_Setting_45], 
+    [Broker].[Broker_Setting_46] AS [Broker_Setting_46], 
+    [Broker].[Broker_Setting_47] AS [Broker_Setting_47], 
+    [Broker].[Broker_Setting_48] AS [Broker_Setting_48], 
+    [Broker].[Broker_Setting_49] AS [Broker_Setting_49], 
+    [Broker].[Broker_Setting_50] AS [Broker_Setting_50]
+    FROM [dbo].[Broker] AS [Broker]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="Market" EntityType="Self.Market" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [Market].[Market_ID] AS [Market_ID], 
+    [Market].[MarketSymbol] AS [MarketSymbol], 
+    [Market].[MarketName] AS [MarketName], 
+    [Market].[Market] AS [Market]
+    FROM [dbo].[Market] AS [Market]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="PricePoint" EntityType="Self.PricePoint" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [PricePoint].[PricePoint_ID] AS [PricePoint_ID], 
+    [PricePoint].[Market_ID] AS [Market_ID], 
+    [PricePoint].[Market_Name] AS [Market_Name], 
+    [PricePoint].[PricePoint_Timestamp] AS [PricePoint_Timestamp], 
+    [PricePoint].[PricePoint_Open] AS [PricePoint_Open], 
+    [PricePoint].[PricePoint_Close] AS [PricePoint_Close], 
+    [PricePoint].[PricePoint_High] AS [PricePoint_High], 
+    [PricePoint].[PricePoint_Low] AS [PricePoint_Low], 
+    [PricePoint].[PricePoint_Buy] AS [PricePoint_Buy], 
+    [PricePoint].[PricePoint_Sell] AS [PricePoint_Sell], 
+    [PricePoint].[PricePoint_SellAll] AS [PricePoint_SellAll], 
+    [PricePoint].[PricePoint_SellSplit] AS [PricePoint_SellSplit]
+    FROM [dbo].[PricePoint] AS [PricePoint]</DefiningQuery>
+          </EntitySet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="DBChocolateChips" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Broker">
+          <Key>
+            <PropertyRef Name="Broker_ID" />
+          </Key>
+          <Property Name="Broker_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Broker_NetWorth" Type="Decimal" Precision="19" Scale="4" />
+          <Property Name="Broker_ProfitPerShare" Type="Decimal" Precision="19" Scale="4" />
+          <Property Name="Broker_TotalShareCount" Type="Int32" />
+          <Property Name="Broker_NetWorthPerMarket" Type="Decimal" Precision="19" Scale="4" />
+          <Property Name="Broker_Algorithm_Version" Type="Int32" />
+          <Property Name="Broker_GUID" Type="Int32" />
+          <Property Name="Broker_Setting_01" Type="Double" />
+          <Property Name="Broker_Setting_02" Type="Double" />
+          <Property Name="Broker_Setting_03" Type="Double" />
+          <Property Name="Broker_Setting_04" Type="Double" />
+          <Property Name="Broker_Setting_05" Type="Double" />
+          <Property Name="Broker_Setting_06" Type="Double" />
+          <Property Name="Broker_Setting_07" Type="Double" />
+          <Property Name="Broker_Setting_08" Type="Double" />
+          <Property Name="Broker_Setting_09" Type="Double" />
+          <Property Name="Broker_Setting_10" Type="Double" />
+          <Property Name="Broker_Setting_11" Type="Double" />
+          <Property Name="Broker_Setting_12" Type="Double" />
+          <Property Name="Broker_Setting_13" Type="Double" />
+          <Property Name="Broker_Setting_14" Type="Double" />
+          <Property Name="Broker_Setting_15" Type="Double" />
+          <Property Name="Broker_Setting_16" Type="Double" />
+          <Property Name="Broker_Setting_17" Type="Double" />
+          <Property Name="Broker_Setting_18" Type="Double" />
+          <Property Name="Broker_Setting_19" Type="Double" />
+          <Property Name="Broker_Setting_20" Type="Double" />
+          <Property Name="Broker_Setting_21" Type="Double" />
+          <Property Name="Broker_Setting_22" Type="Double" />
+          <Property Name="Broker_Setting_23" Type="Double" />
+          <Property Name="Broker_Setting_24" Type="Double" />
+          <Property Name="Broker_Setting_25" Type="Double" />
+          <Property Name="Broker_Setting_26" Type="Double" />
+          <Property Name="Broker_Setting_27" Type="Double" />
+          <Property Name="Broker_Setting_28" Type="Double" />
+          <Property Name="Broker_Setting_29" Type="Double" />
+          <Property Name="Broker_Setting_30" Type="Double" />
+          <Property Name="Broker_Setting_31" Type="Double" />
+          <Property Name="Broker_Setting_32" Type="Double" />
+          <Property Name="Broker_Setting_33" Type="Double" />
+          <Property Name="Broker_Setting_34" Type="Double" />
+          <Property Name="Broker_Setting_35" Type="Double" />
+          <Property Name="Broker_Setting_36" Type="Double" />
+          <Property Name="Broker_Setting_37" Type="Double" />
+          <Property Name="Broker_Setting_38" Type="Double" />
+          <Property Name="Broker_Setting_39" Type="Double" />
+          <Property Name="Broker_Setting_40" Type="Double" />
+          <Property Name="Broker_Setting_41" Type="Double" />
+          <Property Name="Broker_Setting_42" Type="Double" />
+          <Property Name="Broker_Setting_43" Type="Double" />
+          <Property Name="Broker_Setting_44" Type="Double" />
+          <Property Name="Broker_Setting_45" Type="Double" />
+          <Property Name="Broker_Setting_46" Type="Double" />
+          <Property Name="Broker_Setting_47" Type="Double" />
+          <Property Name="Broker_Setting_48" Type="Double" />
+          <Property Name="Broker_Setting_49" Type="Double" />
+          <Property Name="Broker_Setting_50" Type="Double" />
+        </EntityType>
+        <EntityType Name="Market">
+          <Key>
+            <PropertyRef Name="Market_ID" />
+          </Key>
+          <Property Name="Market_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MarketSymbol" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="MarketName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Market1" Type="String" MaxLength="10" FixedLength="true" Unicode="true" />
+        </EntityType>
+        <EntityType Name="PricePoint">
+          <Key>
+            <PropertyRef Name="PricePoint_ID" />
+          </Key>
+          <Property Name="PricePoint_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Market_ID" Type="Int32" />
+          <Property Name="Market_Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PricePoint_Timestamp" Type="Binary" MaxLength="8" FixedLength="true" annotation:StoreGeneratedPattern="Computed" />
+          <Property Name="PricePoint_Open" Type="Decimal" Precision="19" Scale="4" />
+          <Property Name="PricePoint_Close" Type="Decimal" Precision="19" Scale="4" />
+          <Property Name="PricePoint_High" Type="Decimal" Precision="19" Scale="4" />
+          <Property Name="PricePoint_Low" Type="Decimal" Precision="19" Scale="4" />
+          <Property Name="PricePoint_Buy" Type="Int32" />
+          <Property Name="PricePoint_Sell" Type="Int32" />
+          <Property Name="PricePoint_SellAll" Type="Int32" />
+          <Property Name="PricePoint_SellSplit" Type="Int32" />
+        </EntityType>
+        <EntityContainer Name="DBBroker" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Brokers" EntityType="Self.Broker" />
+          <EntitySet Name="Markets" EntityType="Self.Market" />
+          <EntitySet Name="PricePoints" EntityType="Self.PricePoint" />
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="DBChocolateChipsStoreContainer" CdmEntityContainer="DBBroker">
+          <EntitySetMapping Name="Brokers">
+            <EntityTypeMapping TypeName="DBChocolateChips.Broker">
+              <MappingFragment StoreEntitySet="Broker">
+                <ScalarProperty Name="Broker_ID" ColumnName="Broker_ID" />
+                <ScalarProperty Name="Broker_NetWorth" ColumnName="Broker_NetWorth" />
+                <ScalarProperty Name="Broker_ProfitPerShare" ColumnName="Broker_ProfitPerShare" />
+                <ScalarProperty Name="Broker_TotalShareCount" ColumnName="Broker_TotalShareCount" />
+                <ScalarProperty Name="Broker_NetWorthPerMarket" ColumnName="Broker_NetWorthPerMarket" />
+                <ScalarProperty Name="Broker_Algorithm_Version" ColumnName="Broker_Algorithm_Version" />
+                <ScalarProperty Name="Broker_GUID" ColumnName="Broker_GUID" />
+                <ScalarProperty Name="Broker_Setting_01" ColumnName="Broker_Setting_01" />
+                <ScalarProperty Name="Broker_Setting_02" ColumnName="Broker_Setting_02" />
+                <ScalarProperty Name="Broker_Setting_03" ColumnName="Broker_Setting_03" />
+                <ScalarProperty Name="Broker_Setting_04" ColumnName="Broker_Setting_04" />
+                <ScalarProperty Name="Broker_Setting_05" ColumnName="Broker_Setting_05" />
+                <ScalarProperty Name="Broker_Setting_06" ColumnName="Broker_Setting_06" />
+                <ScalarProperty Name="Broker_Setting_07" ColumnName="Broker_Setting_07" />
+                <ScalarProperty Name="Broker_Setting_08" ColumnName="Broker_Setting_08" />
+                <ScalarProperty Name="Broker_Setting_09" ColumnName="Broker_Setting_09" />
+                <ScalarProperty Name="Broker_Setting_10" ColumnName="Broker_Setting_10" />
+                <ScalarProperty Name="Broker_Setting_11" ColumnName="Broker_Setting_11" />
+                <ScalarProperty Name="Broker_Setting_12" ColumnName="Broker_Setting_12" />
+                <ScalarProperty Name="Broker_Setting_13" ColumnName="Broker_Setting_13" />
+                <ScalarProperty Name="Broker_Setting_14" ColumnName="Broker_Setting_14" />
+                <ScalarProperty Name="Broker_Setting_15" ColumnName="Broker_Setting_15" />
+                <ScalarProperty Name="Broker_Setting_16" ColumnName="Broker_Setting_16" />
+                <ScalarProperty Name="Broker_Setting_17" ColumnName="Broker_Setting_17" />
+                <ScalarProperty Name="Broker_Setting_18" ColumnName="Broker_Setting_18" />
+                <ScalarProperty Name="Broker_Setting_19" ColumnName="Broker_Setting_19" />
+                <ScalarProperty Name="Broker_Setting_20" ColumnName="Broker_Setting_20" />
+                <ScalarProperty Name="Broker_Setting_21" ColumnName="Broker_Setting_21" />
+                <ScalarProperty Name="Broker_Setting_22" ColumnName="Broker_Setting_22" />
+                <ScalarProperty Name="Broker_Setting_23" ColumnName="Broker_Setting_23" />
+                <ScalarProperty Name="Broker_Setting_24" ColumnName="Broker_Setting_24" />
+                <ScalarProperty Name="Broker_Setting_25" ColumnName="Broker_Setting_25" />
+                <ScalarProperty Name="Broker_Setting_26" ColumnName="Broker_Setting_26" />
+                <ScalarProperty Name="Broker_Setting_27" ColumnName="Broker_Setting_27" />
+                <ScalarProperty Name="Broker_Setting_28" ColumnName="Broker_Setting_28" />
+                <ScalarProperty Name="Broker_Setting_29" ColumnName="Broker_Setting_29" />
+                <ScalarProperty Name="Broker_Setting_30" ColumnName="Broker_Setting_30" />
+                <ScalarProperty Name="Broker_Setting_31" ColumnName="Broker_Setting_31" />
+                <ScalarProperty Name="Broker_Setting_32" ColumnName="Broker_Setting_32" />
+                <ScalarProperty Name="Broker_Setting_33" ColumnName="Broker_Setting_33" />
+                <ScalarProperty Name="Broker_Setting_34" ColumnName="Broker_Setting_34" />
+                <ScalarProperty Name="Broker_Setting_35" ColumnName="Broker_Setting_35" />
+                <ScalarProperty Name="Broker_Setting_36" ColumnName="Broker_Setting_36" />
+                <ScalarProperty Name="Broker_Setting_37" ColumnName="Broker_Setting_37" />
+                <ScalarProperty Name="Broker_Setting_38" ColumnName="Broker_Setting_38" />
+                <ScalarProperty Name="Broker_Setting_39" ColumnName="Broker_Setting_39" />
+                <ScalarProperty Name="Broker_Setting_40" ColumnName="Broker_Setting_40" />
+                <ScalarProperty Name="Broker_Setting_41" ColumnName="Broker_Setting_41" />
+                <ScalarProperty Name="Broker_Setting_42" ColumnName="Broker_Setting_42" />
+                <ScalarProperty Name="Broker_Setting_43" ColumnName="Broker_Setting_43" />
+                <ScalarProperty Name="Broker_Setting_44" ColumnName="Broker_Setting_44" />
+                <ScalarProperty Name="Broker_Setting_45" ColumnName="Broker_Setting_45" />
+                <ScalarProperty Name="Broker_Setting_46" ColumnName="Broker_Setting_46" />
+                <ScalarProperty Name="Broker_Setting_47" ColumnName="Broker_Setting_47" />
+                <ScalarProperty Name="Broker_Setting_48" ColumnName="Broker_Setting_48" />
+                <ScalarProperty Name="Broker_Setting_49" ColumnName="Broker_Setting_49" />
+                <ScalarProperty Name="Broker_Setting_50" ColumnName="Broker_Setting_50" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Markets">
+            <EntityTypeMapping TypeName="DBChocolateChips.Market">
+              <MappingFragment StoreEntitySet="Market">
+                <ScalarProperty Name="Market_ID" ColumnName="Market_ID" />
+                <ScalarProperty Name="MarketSymbol" ColumnName="MarketSymbol" />
+                <ScalarProperty Name="MarketName" ColumnName="MarketName" />
+                <ScalarProperty Name="Market1" ColumnName="Market" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="PricePoints">
+            <EntityTypeMapping TypeName="DBChocolateChips.PricePoint">
+              <MappingFragment StoreEntitySet="PricePoint">
+                <ScalarProperty Name="PricePoint_ID" ColumnName="PricePoint_ID" />
+                <ScalarProperty Name="Market_ID" ColumnName="Market_ID" />
+                <ScalarProperty Name="Market_Name" ColumnName="Market_Name" />
+                <ScalarProperty Name="PricePoint_Timestamp" ColumnName="PricePoint_Timestamp" />
+                <ScalarProperty Name="PricePoint_Open" ColumnName="PricePoint_Open" />
+                <ScalarProperty Name="PricePoint_Close" ColumnName="PricePoint_Close" />
+                <ScalarProperty Name="PricePoint_High" ColumnName="PricePoint_High" />
+                <ScalarProperty Name="PricePoint_Low" ColumnName="PricePoint_Low" />
+                <ScalarProperty Name="PricePoint_Buy" ColumnName="PricePoint_Buy" />
+                <ScalarProperty Name="PricePoint_Sell" ColumnName="PricePoint_Sell" />
+                <ScalarProperty Name="PricePoint_SellAll" ColumnName="PricePoint_SellAll" />
+                <ScalarProperty Name="PricePoint_SellSplit" ColumnName="PricePoint_SellSplit" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
