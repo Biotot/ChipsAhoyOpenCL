@@ -1,6 +1,6 @@
 #include "BrokerLoader.h"
-
-
+#include <stdio.h>
+using namespace std;
 using boost::property_tree::ptree;
 using boost::property_tree::read_xml;
 using boost::property_tree::xml_writer_settings;
@@ -16,9 +16,9 @@ BrokerLoader::~BrokerLoader()
 }
 
 
-std::vector<Broker> BrokerLoader::LoadSavedBrokers(std::string tFileName)
+std::vector<std::string> BrokerLoader::LoadSavedBrokers(std::string tFileName)
 {
-	std::vector<Broker> aBrokerList;
+	std::vector<std::string> aBrokerList;
 
 	ptree aBrokerTree;
 	std::ifstream aFileStream(tFileName);
@@ -28,7 +28,11 @@ std::vector<Broker> BrokerLoader::LoadSavedBrokers(std::string tFileName)
 		if (aValue.first == "Broker")
 		{
 			std::string aFilePath = aValue.second.get<std::string>("FilePath");
-			aBrokerList.push_back(ParseXML(aFilePath));
+			if (aFilePath != "StoredBrokers.xml")
+			{
+				//cout << aFilePath + " LOADING " << endl;
+				aBrokerList.push_back(aFilePath);
+			}
 		}
 	}
 
@@ -52,7 +56,7 @@ Broker BrokerLoader::ParseXML(std::string tFileName)
 		{
 			aBroker.m_BrokerGuid = aValue.second.get<int>("BrokerGUID");
 			aBroker.m_AlgorithmID = aValue.second.get<int>("AlgorithmID");
-			aBroker.m_AlgorithmID = aValue.second.get<int>("AlgorithmID");
+			///aBroker.m_AlgorithmID = aValue.second.get<int>("AlgorithmID");
 
 			aBroker.m_Budget = 0;
 			aBroker.m_BudgetPerMarket = 10000;

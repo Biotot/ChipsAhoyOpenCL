@@ -16,7 +16,9 @@ namespace ChocolateChipsWeb
     {
         public int Market_ID { get; set; }
         public string MarketSymbol { get; set; }
-        public string MarketName { get; set; }
-        public string Market1 { get; set; }
+        public string BrokerGUID { get; set; }
+        public Nullable<double> MarketProfit { get; set; }
+        public Nullable<int> MarketShareCount { get; set; }
+        public Nullable<int> MarketDepth { get; set; }
     }
 }

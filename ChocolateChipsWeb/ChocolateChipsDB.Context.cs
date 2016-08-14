@@ -25,6 +25,7 @@ namespace ChocolateChipsWeb
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<Action> Actions { get; set; }
         public virtual DbSet<Broker> Brokers { get; set; }
         public virtual DbSet<Market> Markets { get; set; }
         public virtual DbSet<PricePoint> PricePoints { get; set; }

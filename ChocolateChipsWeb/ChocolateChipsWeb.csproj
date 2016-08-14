@@ -192,6 +192,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Action.cs">
+      <DependentUpon>ChocolateChipsDB.tt</DependentUpon>
+    </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
@@ -257,6 +260,7 @@
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <EntityDeploy Include="ChocolateChipsDB.edmx">
       <Generator>EntityModelCodeGenerator</Generator>

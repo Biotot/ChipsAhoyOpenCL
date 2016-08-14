@@ -20,7 +20,8 @@ namespace ChocolateChipsWeb
         public Nullable<int> Broker_TotalShareCount { get; set; }
         public Nullable<decimal> Broker_NetWorthPerMarket { get; set; }
         public Nullable<int> Broker_Algorithm_Version { get; set; }
-        public Nullable<int> Broker_GUID { get; set; }
+        public string Broker_GUID { get; set; }
+        public Nullable<double> Broker_Setting_00 { get; set; }
         public Nullable<double> Broker_Setting_01 { get; set; }
         public Nullable<double> Broker_Setting_02 { get; set; }
         public Nullable<double> Broker_Setting_03 { get; set; }

@@ -13,6 +13,7 @@ class SimControl
 {
 public:
 	Broker m_BestBroker;
+	int m_MarketCount;
 	Market* m_MarketList;
 	int m_TotalPriceCount;
 	OpenCLLoad m_Loader;
@@ -23,6 +24,7 @@ public:
 	~SimControl();
 	void Run(int aSimDepth, int tBrokerCount);
 	double GetTime();
+	void SetMarketList(int tSimDepth);
 	std::string LogBroker(Broker tBroker, std::string tMessage, bool tWrite);
 	void Log(std::string tLog, bool tConsole, std::string tFileName);
 	void ReworkBrokerList(Broker* tBrokerList, Broker *tBestBroker, int tBrokerCount, int tMarketCount, double tRange);

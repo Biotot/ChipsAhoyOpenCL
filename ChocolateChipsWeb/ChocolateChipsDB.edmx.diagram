@@ -4,10 +4,11 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="620f74a0b63e4e98a572a444f5e5c8d7" Name="Diagram1" ZoomLevel="121">
-        <EntityTypeShape EntityType="DBChocolateChips.Broker" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="DBChocolateChips.Market" Width="1.5" PointX="2.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="DBChocolateChips.PricePoint" Width="1.5" PointX="2.75" PointY="2.75" IsExpanded="true" />
+      <Diagram DiagramId="620f74a0b63e4e98a572a444f5e5c8d7" Name="Diagram1" ZoomLevel="100">
+        <EntityTypeShape EntityType="DBChocolateChips.Action" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="DBChocolateChips.Broker" Width="1.5" PointX="2.75" PointY="0.75" />
+        <EntityTypeShape EntityType="DBChocolateChips.Market" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="DBChocolateChips.PricePoint" Width="1.5" PointX="4.75" PointY="3.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

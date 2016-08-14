@@ -173,6 +173,7 @@
   <ItemGroup>
     <ClCompile Include="BrokerLoader.cpp" />
     <ClCompile Include="ChipsDB.cpp" />
+    <ClCompile Include="KernalClone.cpp" />
     <ClCompile Include="MarketLoader.cpp" />
     <ClCompile Include="OpenCLLoad.cpp" />
     <ClCompile Include="SimControl.cpp" />
@@ -230,6 +231,7 @@
   <ItemGroup>
     <ClInclude Include="BrokerLoader.h" />
     <ClInclude Include="ChipsDB.h" />
+    <ClInclude Include="KernalClone.h" />
     <ClInclude Include="MarketLoader.h" />
     <ClInclude Include="OpenCLLoad.h" />
     <ClInclude Include="resource.h" />

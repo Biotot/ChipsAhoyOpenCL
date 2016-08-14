@@ -4,18 +4,29 @@ using boost::property_tree::ptree;
 using boost::property_tree::write_xml;
 using boost::property_tree::xml_writer_settings;
 
+
 void UpdateBrokers()
 {
 	BrokerLoader aLoader; 
 
-	std::vector<Broker> aSavedBrokerList = aLoader.LoadSavedBrokers("Broker\\Saved\\StoredBrokers.xml");
+	std::vector<string> aSavedBrokerList = aLoader.LoadSavedBrokers("Broker\\Saved\\StoredBrokers.xml");
 
 	SimControl aHost;
+	int aSimDepth = 1;
+	aHost.SetMarketList(aSimDepth);
 	for (int x = 0; x < aSavedBrokerList.size(); x++)
 	{
-		int aSimDepth = 1;
-		aHost.m_BestBroker = aSavedBrokerList[x];
-		aHost.Run(aSimDepth, 1);
+		try
+		{
+			cout << aSavedBrokerList[x] + " LOADING " << endl;
+			aHost.m_BestBroker = aLoader.ParseXML(aSavedBrokerList[x]);
+			//cout << aHost.m_BestBroker.m_BrokerGuid + " RUNNING " << endl;
+			aHost.Run(aSimDepth, 1);
+		}
+		catch(exception e)
+		{
+			cout << "ERROR" << endl;
+		}
 	}
 
 }
@@ -44,10 +55,12 @@ void BruteBrokers()
 		{
 			if (aBrokerSelection > 5)
 			{
+				aHost.SetMarketList(x);
 				aHost.Run(x, aBrokerSelection);
 			}
 			else
 			{
+				aHost.SetMarketList(x);
 				aHost.Run(x, aBrokerCount[aBrokerSelection]);
 			}
 		}
@@ -95,29 +108,41 @@ SimControl::SimControl()
 
 SimControl::~SimControl()
 {
+	if (m_MarketList != NULL)
+	{
+		delete m_MarketList;
+	}
+}
+
+
+void SimControl::SetMarketList(int tSimDepth)
+{
+	vector<string> aMarketStringList = { "GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "WFC", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA", "NFLX", "TWTR", "MSFT", "GPRO", "BABA", "FIT" };
+
+	//vector<string> aMarketStringList = { "GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "WFC", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA"};
+	//vector<string> aMarketStringList = { "GE" }; 
+
+	
+	m_MarketCount = aMarketStringList.size();
+	m_MarketList = new Market[m_MarketCount];
+	m_TotalPriceCount = 0;
+	for (int x = 0; x < m_MarketCount; x++)
+	{
+		MarketLoader aLoader(aMarketStringList[x], 1980, (tSimDepth * 3 * ONEYEAR) + ONEYEAR);
+		m_MarketList[x] = aLoader.m_Market;
+		m_TotalPriceCount += aLoader.m_Market.m_MarketPriceCount;
+	}
+
 }
 
 void SimControl::Run(int tSimDepth, int tBrokerCount)
 {
 
 	int aBrokerCount = tBrokerCount;
-	m_TotalPriceCount = 0;
-	vector<string> aMarketStringList = {"GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "WFC", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA", "NFLX", "TWTR", "MSFT", "GPRO", "BABA", "FIT"};
 
-	//vector<string> aMarketStringList = { "GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "WFC", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA"};
-	//vector<string> aMarketStringList = { "GE" }; 
-
-	int aMarketCount = aMarketStringList.size();
-	Market* aMarketList = new Market[aMarketCount];
-	for (int x = 0; x < aMarketCount; x++)
-	{
-		MarketLoader aLoader(aMarketStringList[x], 1980, (tSimDepth*3*ONEYEAR)+ONEYEAR);
-		aMarketList[x] = aLoader.m_Market;
-		m_TotalPriceCount += aLoader.m_Market.m_MarketPriceCount;
-	}
 	cout << "Running with: " << m_TotalPriceCount << " price points" << endl;
 
-	m_BestBroker.m_MarketCount = aMarketCount;
+	m_BestBroker.m_MarketCount = m_MarketCount;
 
 	//aOpenCLCaller.DisplayBestBroker(m_BestBroker, aMarketList[0]);
 	//vector<Broker> aBestofTheBest;
@@ -144,9 +169,9 @@ void SimControl::Run(int tSimDepth, int tBrokerCount)
 				aRange = floor(200 * ((aMillion - x) / aMillion));
 				clock_t aStartLoop = clock();
 				Broker* aBrokerList = new Broker[aBrokerCount];
-				ReworkBrokerList(aBrokerList, &m_BestBroker, aBrokerCount, aMarketCount, aRange);
+				ReworkBrokerList(aBrokerList, &m_BestBroker, aBrokerCount, m_MarketCount, aRange);
 
-				m_Loader.TestRun(aBrokerList, aBrokerCount, aMarketList, aMarketCount);
+				m_Loader.TestRun(aBrokerList, aBrokerCount, m_MarketList, m_MarketCount);
 				aTotalSimCount += aBrokerCount;
 				Broker aTempBroker = m_BestBroker;
 
@@ -187,8 +212,8 @@ void SimControl::Run(int tSimDepth, int tBrokerCount)
 					clock_t aStartLoop = clock();
 					Broker* aBrokerList = new Broker[aBrokerCount];
 					Broker aBestofTheBestofTheBest = m_BestBroker;
-					RefineBrokerList(aBrokerList, &m_BestBroker, aBrokerCount, aMarketCount, aRange, x);
-					m_Loader.TestRun(aBrokerList, aBrokerCount, aMarketList, aMarketCount);
+					RefineBrokerList(aBrokerList, &m_BestBroker, aBrokerCount, m_MarketCount, aRange, x);
+					m_Loader.TestRun(aBrokerList, aBrokerCount, m_MarketList, m_MarketCount);
 					aTotalSimCount += aBrokerCount;
 
 					Broker aTempBroker = m_BestBroker;
@@ -228,7 +253,7 @@ void SimControl::Run(int tSimDepth, int tBrokerCount)
 	aSettingsNode = BrokerSettingsToNode(m_BestBroker);
 	//aSimBroker.m_NetWorth = 0;
 	Broker aTempBroker = m_BestBroker;
-	double aProfit = m_BestBroker.m_NetWorth - (m_BestBroker.m_BudgetPerMarket*aMarketCount);
+	double aProfit = m_BestBroker.m_NetWorth - (m_BestBroker.m_BudgetPerMarket*m_MarketCount);
 	ptree aBrokerDetails;
 	aBrokerDetails.add("AlgorithmID", m_BestBroker.m_AlgorithmID);
 	aBrokerDetails.add("BrokerGUID", m_BestBroker.m_BrokerGuid);
@@ -239,10 +264,10 @@ void SimControl::Run(int tSimDepth, int tBrokerCount)
 	aBrokerDetails.add_child("Settings", aSettingsNode);
 	aBrokerXML.add_child("Broker.Details", aBrokerDetails);
 
-	for (int x=0; x<aMarketCount; x++)
+	for (int x=0; x<m_MarketCount; x++)
 	{
 		aTempBroker = m_BestBroker;
-		ptree aMarketDisplay = m_Loader.DisplayBestBroker(&aTempBroker, aMarketList[x]);
+		ptree aMarketDisplay = m_Loader.DisplayBestBroker(&aTempBroker, m_MarketList[x]);
 		aBrokerXML.add_child("Broker.MarketResult", aMarketDisplay);/*
 		aProfit += (aTempBroker.m_NetWorth - (aTempBroker.m_BudgetPerMarket));
 		aTotalShareCount += aTempBroker.m_TotalShareCount;*/
@@ -250,7 +275,7 @@ void SimControl::Run(int tSimDepth, int tBrokerCount)
 	
 	string aSaveFile = to_string(m_BestBroker.m_BrokerGuid) + "__" + to_string(tSimDepth) + ".xml";
 	write_xml("Broker\\" + aSaveFile, aBrokerXML);
-	delete aMarketList;
+	//delete aMarketList;
 	//system("PAUSE");
 
 #pragma endregion
@@ -378,7 +403,7 @@ Broker SimControl::CalcDeviations(Broker* tBrokerList, int tBrokerCount)
 			double aScore = ((tBrokerList[x].m_TotalProfit - aTotalProfithMean) / atotalProfitDev);
 			aScore += 3*((tBrokerList[x].m_ProfitPerShare - aProfitPerShareMean) / aProfitPerShareDev);
 			int aUsableMarketCount = tBrokerList[x].m_TotalShareCount - ONEYEAR;
-			if ((aUsableMarketCount > m_TotalPriceCount / 30) && (aUsableMarketCount < m_TotalPriceCount / 7))
+			if ((aUsableMarketCount > m_TotalPriceCount / 20) && (aUsableMarketCount < m_TotalPriceCount / 2))
 			{
 				tBrokerList[x].m_BrokerScore = aScore;
 			}

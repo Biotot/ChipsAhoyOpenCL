@@ -11,7 +11,7 @@ class BrokerLoader
 public:
 	BrokerLoader();
 	~BrokerLoader();
-	std::vector<Broker> LoadSavedBrokers(std::string tFileName);
+	std::vector<std::string> LoadSavedBrokers(std::string tFileName);
 	Broker ParseXML(std::string tFileName);
 };
 
