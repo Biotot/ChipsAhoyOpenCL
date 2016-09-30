@@ -1,0 +1,1 @@
+ChipsAhoyOpenCL.exe BRUTE 00 25000

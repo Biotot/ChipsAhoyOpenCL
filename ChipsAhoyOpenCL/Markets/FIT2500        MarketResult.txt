@@ -1,2 +1,0 @@
-RUNNING FIT2500        A
-Final: 0.000000

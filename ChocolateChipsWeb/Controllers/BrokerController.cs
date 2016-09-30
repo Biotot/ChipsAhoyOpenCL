@@ -17,6 +17,7 @@ using System.Text;
 
 using System.Diagnostics;
 using ChocolateChipsWeb;
+using EntityFramework.BulkInsert.Extensions;
 
 namespace ChocolateChipsWeb.Controllers
 {
@@ -29,458 +30,568 @@ namespace ChocolateChipsWeb.Controllers
 
         List<Thread> m_ThreadList;
 
-        String m_ConnectionString = "Server=SHKBOX\\SQLEXPRESS;Database=DBChocolateChips;User Id=Admin;Password=Admin;";
+        String m_ConnectionString = "Server=SHKBOX;Database=DBChocolateChips;User Id=sa;Password=5tgb6yhn;";
         SqlConnection m_Connection;
 
         public static void ThreadPoolAction(String tFileName)
         {
-            // int threadIndex = (int)threadContext;
-            // Console.WriteLine("thread {0} started...", threadIndex);
-            //fibOfN = Calculate(_n);
             ParseXML((String)tFileName);
-
-
-            //if (tVar != null)
-            //{
-            //    tVar.Set();
-            //}
-            //else
-            //{
-
-            //}
-            // Console.WriteLine("thread {0} result calculated...", threadIndex);
-            //_doneEvent.Set();
         }
 
         public void LoadBrokers()
         {
-            String aBaseFilePath = "E:\\Development\\ChipsAhoyOpenCL\\ChipsAhoyOpenCL\\Broker";
+            String aBaseFilePath = "E:\\Development\\ChipsAhoyOpenCL\\ChipsAhoyOpenCL\\Broker\\Saved";
+            if (Directory.Exists("R:\\ChocolateChips\\Broker\\Saved"))
+            {
+
+                aBaseFilePath = "R:\\ChocolateChips\\Broker\\Saved";
+            }
+            else
+            {
+
+            }
+           // String aBaseFilePath = "E:\\Development\\ChipsAhoyOpenCL\\ChipsAhoyOpenCL\\Broker\\Saved";
             String[] aFileList =  Directory.GetFiles(aBaseFilePath, "*xml");
-            //ParseXML("E:\\Development\\ChipsAhoyOpenCL\\ChipsAhoyOpenCL\\Broker\\361480145__1.xml");
 
-
-            //ThreadPool.SetMaxThreads(10, 10);
-            ManualResetEvent[] aHandleList = new ManualResetEvent[aFileList.Count()];
-            m_ThreadList = new List<Thread>();
-            //ThreadPool.QueueUserWorkItem(new WaitCallback(ParseXML), aFileList);
-
-            for (int y = 0; y < aFileList.Count() - 1; y++)
+            using (DBBroker aDB = new DBBroker())
             {
-                aHandleList[y] = new ManualResetEvent(false);
-                Console.WriteLine(y + " of " + aFileList.Count());
-                //Thread aThread = new Thread(new ThreadStart(BrokerController.ParseXML));
-                Thread aThread = new Thread(x => ParseXML(aFileList[y]));
-                aThread.Start();
-                m_ThreadList.Add(aThread);
-                //ThreadPool.QueueUserWorkItem(x =>
-                //{
+                
+                int aFailCount = 0;
+                for (bool aPass = false; !aPass; aFailCount++)
+                {
 
-                //});
+                    //if (aDB.Actions.Count() > 1000000)
+                    try
+                    {
+                        aDB.Database.ExecuteSqlCommand("sp_PurgeDatabase");
+                        aPass = true;
+                    }
+                    catch (Exception e)
+                    {
+                        //Thread.Sleep(1000 * aFailCount);
+                        if (aFailCount > 3)
+                        {
+                            Console.WriteLine("WTF");
+                        }
+                    }
+                }
 
+                ManualResetEvent[] aHandleList = new ManualResetEvent[aFileList.Count()];
+                m_ThreadList = new List<Thread>();
+                int aThreadIndex = 0;
+                int aActiveCount = 10;
+                for (int y = 0; y < aFileList.Count() - 1; y++)
+                {
+                    aHandleList[y] = new ManualResetEvent(false);
+                    Console.WriteLine(y + " of " + aFileList.Count());
+                    Thread aThread = new Thread(x => ParseXML(aFileList[y]));
+                    aThread.Start();
+                    m_ThreadList.Add(aThread);
+
+                    if (aThreadIndex<aFileList.Count())
+                    {
+                        if (y > aThreadIndex + aActiveCount)
+                        {
+                            m_ThreadList[aThreadIndex].Join();
+                            aThreadIndex++;
+                        }
+                    }
+
+                    //Thread.Sleep(500);
+                }
+
+                //WaitHandle.WaitAll(aHandleList);
+                for (int x = aThreadIndex+1; x < m_ThreadList.Count(); x++)
+                {
+                    m_ThreadList[x].Join();
+
+                }
+
+                //aDB.sp_ClenseMarkets();
+                //aDB.Database.ExecuteSqlCommand("sp_ClenseMarkets");
             }
-
-            //WaitHandle.WaitAll(aHandleList);
-            for(int x=0; x< m_ThreadList.Count(); x++)
-            {
-                m_ThreadList[x].Join();
-            //    var aTempList = new ManualResetEvent[1];
-            //    aTempList[0] = aHandleList[x];
-            //    WaitHandle.WaitAll(aTempList);
-                // ManualResetEvent[] = new ManualResetEvent[aFileList.Count()];
-
-
-            }
-            //foreach (var aHandle in aHandleList)
-            //{
-            //    aHandle.WaitOne();
-            //    //var aTempList = new ManualResetEvent[1];
-            //    //aTempList[0] = aHandle;
-            //    //WaitHandle.WaitAny(aTempList);
-            //}
-
-
-            }
+        }
 
 
         public static void ParseXML(String tFile)
         {
             StringBuilder aRet = new StringBuilder();
-            DBBroker aDBContext = new DBBroker();
-            bool aSuccess;
-            using (XmlReader aReader = XmlReader.Create(tFile))
+
+            using (DBBroker aDBContext = new DBBroker())
             {
-                List<Market> aMarketList = new List<Market>();
 
-                aReader.MoveToContent();
-                String aGhettoEnum = "";
-                
-                Broker aCurrentBroker = new Broker();
-                Market aCurrentMarket;
-                Action aCurrentAction;
-
-
-                while (aReader.Read())
+                aDBContext.Configuration.AutoDetectChangesEnabled = false;
+                aDBContext.Configuration.ValidateOnSaveEnabled = false;
+                bool aSuccess;
+                using (XmlReader aReader = XmlReader.Create(tFile))
                 {
-                    if (aReader.NodeType == XmlNodeType.Element)
+                    List<Market> aMarketList = new List<Market>();
+                    List<Action> aFullActionList = new List<Action>();
+                    aReader.MoveToContent();
+                    String aGhettoEnum = "";
+
+                    Broker aCurrentBroker = new Broker();
+                    Market aCurrentMarket;
+                    Action aCurrentAction;
+
+
+                    while (aReader.Read())
                     {
-
-                        switch (aReader.Name)
+                        if (aReader.NodeType == XmlNodeType.Element)
                         {
-                            case "AlgorithmID":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Algorithm_Version = int.Parse(aReader.Value);
-                                break;
-                            case "BrokerGUID":
-                                aReader.Read();
-                                aCurrentBroker.Broker_GUID = aReader.Value;
-                                break;
 
-                            case "TotalProfit":
-                                aReader.Read();
-                                aCurrentBroker.Broker_NetWorth = decimal.Parse(aReader.Value);
-                                break;
-                            case "ShareCount":
-                                aReader.Read();
-                                aCurrentBroker.Broker_TotalShareCount = int.Parse(aReader.Value);
-                                break;
-                            case "ProfitPerShare":
-                                aReader.Read();
-                                aCurrentBroker.Broker_ProfitPerShare = decimal.Parse(aReader.Value);
-                                break;
-
-                            #region SETTINGS
-                            case "Setting0":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_00 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting1":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_01 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting2":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_02 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting3":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_03 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting4":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_04 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting5":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_05 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting6":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_06 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting7":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_07 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting8":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_08 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting9":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_09 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting10":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_10 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting11":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_11 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting12":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_12 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting13":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_13 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting14":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_14 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting15":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_15 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting16":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_16 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting17":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_17 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting18":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_18 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting19":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_19 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting20":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_20 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting21":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_21 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting22":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_22 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting23":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_23 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting24":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_24 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting25":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_25 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting26":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_26 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting27":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_27 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting28":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_28 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting29":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_29 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting30":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_30 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting31":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_31 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting32":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_32 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting33":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_33 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting34":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_34 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting35":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_35 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting36":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_36 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting37":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_37 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting38":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_38 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting39":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_39 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting40":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_40 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting41":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_41 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting42":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_42 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting43":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_43 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting44":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_44 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting45":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_45 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting46":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_46 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting47":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_47 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting48":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_48 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting49":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_49 = double.Parse(aReader.Value);
-                                break;
-                            case "Setting50":
-                                aReader.Read();
-                                aCurrentBroker.Broker_Setting_50 = double.Parse(aReader.Value);
-                                break;
-                            #endregion
-                                
-                            case "MarketActions":
-                                if (aReader.NodeType == XmlNodeType.Element)
-                                {
-                                    aCurrentMarket = new Market();
-                                    List<Action> aActionList = new List<Action>();
-                                    string aMarketName = aReader.GetAttribute("Name");
+                            decimal aVal;
+                            switch (aReader.Name)
+                            {
+                                case "AlgorithmID":
                                     aReader.Read();
-                                    aCurrentMarket.BrokerGUID = (aCurrentBroker.Broker_GUID).ToString();
-                                    aCurrentMarket.MarketSymbol = aMarketName;
+                                    aCurrentBroker.Broker_Algorithm_Version = int.Parse(aReader.Value);
+                                    break;
+                                case "BrokerGUID":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_GUID = aReader.Value;
 
-                                    bool aLoadingMarket = true;
-                                    while (aReader.Read() && aLoadingMarket)
+                                    bool aDeleted = false;
+
+                                    while (!aDeleted)
                                     {
-                                        if (aReader.Name == "Action")
+                                        try
                                         {
-                                            aCurrentAction = new Action();
-                                            aCurrentAction.BrokerGUID = (aCurrentBroker.Broker_GUID).ToString();
-                                            aCurrentAction.MarketSymbol = aMarketName;
 
-                                            String aTimeStamp = aReader.GetAttribute("TimeStamp");
-                                            aTimeStamp = aTimeStamp.Replace("|", "");
-                                            aCurrentAction.TimeStamp = aTimeStamp;
-                                            aCurrentAction.Action1 = aReader.GetAttribute("Action");
-                                            aCurrentAction.ShareCount = int.Parse(aReader.GetAttribute("ShareCount"));
-                                            aCurrentAction.Price = double.Parse(aReader.GetAttribute("Price"));
-                                            aCurrentAction.Investment = double.Parse(aReader.GetAttribute("Investment"));
-                                            aCurrentAction.Budget = double.Parse(aReader.GetAttribute("Budget"));
-                                            aCurrentAction.Value = aCurrentAction.ShareCount * aCurrentAction.Price;
-
-
-                                            // int aActionInsert = 
-                                            aActionList.Add(aCurrentAction);
-                                            //aActionInsert.
-                                            // aActionInsert.Start();
+                                            //aDBContext.Actions.Where(aAction => aAction.BrokerGUID == aCurrentBroker.Broker_GUID).del;
+                                            //aDBContext.Actions.RemoveRange(aDBContext.Actions.Where(aAction => aAction.BrokerGUID.Equals(aCurrentBroker.Broker_GUID)));
+                                            //aDBContext.Brokers.RemoveRange(aDBContext.Brokers.Where(aBroker => aBroker.Broker_GUID.Equals(aCurrentBroker.Broker_GUID)));
+                                            //aDBContext.Markets.RemoveRange(aDBContext.Markets.Where(aMarket => aMarket.BrokerGUID.Equals(aCurrentBroker.Broker_GUID)));
+                                            //aDBContext.SaveChanges();
+                                            aDeleted = true;
                                         }
-
-
-                                        if (aReader.Name == "Details" && aReader.NodeType == XmlNodeType.Element)
+                                        catch (Exception e)
                                         {
-                                            while (aReader.Read() && aLoadingMarket)
+
+                                        }
+                                    }
+                                    break;
+
+                                case "TotalProfit":
+                                    aReader.Read();
+                                    if (!decimal.TryParse(aReader.Value, out aVal))
+                                    {
+                                        aVal = 0;
+                                    }
+                                    aCurrentBroker.Broker_NetWorth = aVal;
+                                    break;
+                                case "ShareCount":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_TotalShareCount = int.Parse(aReader.Value);
+                                    break;
+                                case "ProfitPerShare":
+                                    aReader.Read();
+                                    if (!decimal.TryParse(aReader.Value, out aVal))
+                                    {
+                                        aVal = 0;
+                                    }
+                                    aCurrentBroker.Broker_ProfitPerShare = aVal;
+                                    break;
+
+                                #region SETTINGS
+                                case "Setting0":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_00 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting1":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_01 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting2":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_02 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting3":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_03 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting4":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_04 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting5":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_05 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting6":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_06 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting7":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_07 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting8":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_08 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting9":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_09 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting10":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_10 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting11":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_11 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting12":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_12 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting13":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_13 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting14":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_14 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting15":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_15 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting16":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_16 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting17":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_17 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting18":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_18 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting19":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_19 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting20":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_20 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting21":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_21 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting22":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_22 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting23":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_23 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting24":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_24 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting25":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_25 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting26":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_26 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting27":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_27 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting28":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_28 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting29":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_29 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting30":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_30 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting31":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_31 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting32":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_32 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting33":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_33 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting34":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_34 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting35":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_35 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting36":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_36 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting37":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_37 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting38":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_38 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting39":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_39 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting40":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_40 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting41":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_41 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting42":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_42 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting43":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_43 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting44":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_44 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting45":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_45 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting46":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_46 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting47":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_47 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting48":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_48 = double.Parse(aReader.Value);
+                                    break;
+                                case "Setting49":
+                                    aReader.Read();
+                                    aCurrentBroker.Broker_Setting_49 = double.Parse(aReader.Value);
+                                    break;
+                                //case "Setting50":
+                                //    aReader.Read();
+                                //    aCurrentBroker.Broker_Setting_50 = double.Parse(aReader.Value);
+                                //    break;
+                                #endregion
+
+                                case "MarketActions":
+                                    if (aReader.NodeType == XmlNodeType.Element)
+                                    {
+                                        aCurrentMarket = new Market();
+                                        List<Action> aActionList = new List<Action>();
+                                        string aMarketName = aReader.GetAttribute("Name");
+                                        aReader.Read();
+                                        aCurrentMarket.BrokerGUID = (aCurrentBroker.Broker_GUID).ToString();
+                                        aCurrentMarket.MarketSymbol = aMarketName;
+
+                                        bool aLoadingMarket = true;
+                                        while (aReader.Read() && aLoadingMarket)
+                                        {
+                                            if (aReader.Name == "Action")
                                             {
-                                                if (aReader.NodeType == XmlNodeType.Element)
-                                                {
-                                                    if (aReader.Name == "Profit")
-                                                    {
-                                                        aReader.Read();
-                                                         aCurrentMarket.MarketProfit = double.Parse(aReader.Value);
-                                                    }
-                                                    else if (aReader.Name == "ShareCount")
-                                                    {
-                                                        aReader.Read();
-                                                        aCurrentMarket.MarketShareCount = int.Parse(aReader.Value);
+                                                aCurrentAction = new Action();
+                                                aCurrentAction.BrokerGUID = (aCurrentBroker.Broker_GUID).ToString();
+                                                aCurrentAction.MarketSymbol = aMarketName;
 
-                                                        aMarketList.Add(aCurrentMarket);
-                                                        
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    if (aReader.NodeType == XmlNodeType.EndElement)
-                                                    {
+                                                String aTimeStamp = aReader.GetAttribute("TimeStamp");
+                                                aTimeStamp = aTimeStamp.Replace("|", "");
+                                                aCurrentAction.TimeStamp = aTimeStamp;
+                                                aCurrentAction.Action1 = aReader.GetAttribute("Action");
+                                                aCurrentAction.ShareCount = int.Parse(aReader.GetAttribute("ShareCount"));
+                                                aCurrentAction.Price = double.Parse(aReader.GetAttribute("Price"));
+                                                aCurrentAction.Investment = double.Parse(aReader.GetAttribute("Investment"));
+                                                aCurrentAction.Budget = double.Parse(aReader.GetAttribute("Budget"));
+                                                aCurrentAction.Value = aCurrentAction.ShareCount * aCurrentAction.Price;
 
-                                                        if (aReader.Name == "Details")
+
+                                                // int aActionInsert = 
+                                                aActionList.Add(aCurrentAction);
+                                                aFullActionList.Add(aCurrentAction);
+                                                //aActionInsert.
+                                                // aActionInsert.Start();
+                                            }
+
+
+                                            if (aReader.Name == "Details" && aReader.NodeType == XmlNodeType.Element)
+                                            {
+                                                while (aReader.Read() && aLoadingMarket)
+                                                {
+                                                    if (aReader.NodeType == XmlNodeType.Element)
+                                                    {
+                                                        if (aReader.Name == "Profit")
                                                         {
-                                                            //Task aMarketInsert = CheckMarket(aCurrentMarket, aContext);
-                                                            //aMarketInsert.Wait();
-                                                            aLoadingMarket = false;
+                                                            aReader.Read();
+                                                            aCurrentMarket.MarketProfit = double.Parse(aReader.Value);
+                                                        }
+                                                        else if (aReader.Name == "ShareCount")
+                                                        {
+                                                            aReader.Read();
+                                                            aCurrentMarket.MarketShareCount = int.Parse(aReader.Value);
+                                                            
+                                                        }
+                                                        else if (aReader.Name == "ProfitPerShare")
+                                                        {
+                                                            aReader.Read();
+                                                            decimal aProfitPerShare = decimal.Parse(aReader.Value);
+                                                            aCurrentMarket.MarketProfitPerShare = aProfitPerShare;
+                                                            //aCurrentMarket.MarketDepth = (int)Math.Floor(aProfitPerShare);
+
+                                                            aMarketList.Add(aCurrentMarket);
+                                                            
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (aReader.NodeType == XmlNodeType.EndElement)
+                                                        {
+
+                                                            if (aReader.Name == "Details")
+                                                            {
+                                                                //Task aMarketInsert = CheckMarket(aCurrentMarket, aContext);
+                                                                //aMarketInsert.Wait();
+                                                                aLoadingMarket = false;
+                                                            }
                                                         }
                                                     }
                                                 }
+
+
+
                                             }
-                                            
-                                                
-                                            
                                         }
-                                    }
 
-                                    for (int x = aActionList.Count - 1; x >= 0; x--)
-                                    {
-
-                                        if (CheckAction(aActionList[x], aDBContext))
+                                        for (int x = aActionList.Count - 1; x >= 0; x--)
                                         {
-                                            //aDBContext.Actions.Add(aActionList[x]);
+
+                                            //if (CheckAction(aActionList[x], aDBContext))
+                                            //{
+                                            //    //aDBContext.Actions.Add(aActionList[x]);
+                                            //}
+                                            //else
+                                            //{
+                                            //    break;
+                                            //}
                                         }
-                                        else
-                                        {
-                                            break;
-                                        }
+
                                     }
+                                    break;
 
-                                }
-                                break;
+                                default:
+                                    break;
+                            }
+                        }
 
-                            default:
-                                break;
+                    }
+
+                    for (int x = aMarketList.Count - 1; x >= 0; x--)
+                    {
+
+                        //if (CheckMarket(aMarketList[x], aDBContext))
+                        //{
+                        //    //aDBContext.Markets.Add(aMarketList[x]);
+                        //}
+                        //else
+                        //{
+                        //    break;
+                        //}
+                    }
+
+                    CheckBroker(aCurrentBroker, aDBContext);
+                    //aDBContext.Brokers.Add(aCurrentBroker);
+
+                    IEnumerable<System.Data.Entity.Validation.DbEntityValidationResult> aList = aDBContext.GetValidationErrors();
+                    if (aList.Count() > 0)
+                    {
+
+                    }
+
+                    int aFailCount = 0;
+                    for (bool aPass = false; !aPass;)
+                    {
+
+                        try
+                        {
+                            aDBContext.BulkInsert(aFullActionList);
+                            aPass = true;
+                        }
+                        catch (Exception e)
+                        {
+                            aFailCount++;
+                            Thread.Sleep(1000*aFailCount);
+                            if (aFailCount > 1)
+                            {
+                                Console.WriteLine("WTF");
+                            }
+                        }
+                    }
+                    for (bool aPass = false; !aPass; )
+                    {
+
+                        try
+                        {
+                            aDBContext.BulkInsert(aMarketList);
+                            aPass = true;
+                        }
+                        catch (Exception e)
+                        {
+                            aFailCount++;
+                            Thread.Sleep(1000 * aFailCount);
+                            if (aFailCount > 1)
+                            {
+                                Console.WriteLine("WTF");
+                            }
+                        }
+                    }
+                    for (bool aPass = false; !aPass; )
+                    {
+
+                        try
+                        {
+                            aDBContext.Brokers.Add(aCurrentBroker);
+                            aDBContext.SaveChanges();
+                            aPass = true;
+                        }
+                        catch (Exception e)
+                        {
+                            aFailCount++;
+                            Thread.Sleep(1000 * aFailCount);
+                            if (aFailCount > 1)
+                            {
+                                Console.WriteLine("WTF");
+                            }
                         }
                     }
 
-                }
-
-                for (int x = aMarketList.Count - 1; x >= 0; x--)
-                {
-
-                    if (CheckMarket(aMarketList[x], aDBContext))
-                    {
-                        //aDBContext.Markets.Add(aMarketList[x]);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                
-                CheckBroker(aCurrentBroker, aDBContext);
-                //aDBContext.Brokers.Add(aCurrentBroker);
-
-                IEnumerable<System.Data.Entity.Validation.DbEntityValidationResult> aList = aDBContext.GetValidationErrors();
-                if (aList.Count() > 0)
-                {
 
                 }
 
-
-                aDBContext.SaveChangesAsync();
             }
-
         }
 
 
@@ -590,24 +701,24 @@ namespace ChocolateChipsWeb.Controllers
             //   &&       aAction.BrokerGUID.Equals(tAction.BrokerGUID)
             //   &&       aAction.MarketSymbol.Equals(tAction.MarketSymbol)
             //            select aAction).ToListAsync();
-            bool aRetQuery = false;
-            while (!aRetQuery)
-            {
-                try
-                {
-                    aActionList = (from aAction in aDBContext.Actions
-                                   where aAction.TimeStamp.Equals(tAction.TimeStamp)
-                                   && aAction.Action1.Equals(tAction.Action1)
-                                   && aAction.BrokerGUID.Equals(tAction.BrokerGUID)
-                                   && aAction.MarketSymbol.Equals(tAction.MarketSymbol)
-                                   select aAction).ToList();
-                    aRetQuery = true;
-                }
-                catch(Exception e)
-                {
+            //bool aRetQuery = false;
+            //while (false)//!aRetQuery)
+            //{
+            //    try
+            //    {
+            //        aActionList = (from aAction in aDBContext.Actions
+            //                       where aAction.TimeStamp.Equals(tAction.TimeStamp)
+            //                       && aAction.Action1.Equals(tAction.Action1)
+            //                       && aAction.BrokerGUID.Equals(tAction.BrokerGUID)
+            //                       && aAction.MarketSymbol.Equals(tAction.MarketSymbol)
+            //                       select aAction).ToList();
+            //        aRetQuery = true;
+            //    }
+            //    catch(Exception e)
+            //    {
 
-                }
-            }
+            //    }
+            //}
 
             if (aActionList.Count == 0)
             {
@@ -621,10 +732,10 @@ namespace ChocolateChipsWeb.Controllers
         {
             bool aRet = false;
             List<Market> aMarketList = new List<Market>();
-            //SContext.ChangeTracker.
-            aMarketList = (from aMarket in aDBContext.Markets where 
-                                  aMarket.BrokerGUID.Equals(tMarket.BrokerGUID) && aMarket.MarketSymbol.Equals(tMarket.MarketSymbol)
-                                  select aMarket).ToList();
+            ////SContext.ChangeTracker.
+            //aMarketList = (from aMarket in aDBContext.Markets where 
+            //                      aMarket.BrokerGUID.Equals(tMarket.BrokerGUID) && aMarket.MarketSymbol.Equals(tMarket.MarketSymbol)
+            //                      select aMarket).ToList();
 
             if (aMarketList.Count == 0)
             {
@@ -639,8 +750,8 @@ namespace ChocolateChipsWeb.Controllers
             bool aRet = false;
             List<Broker> aBrokerList = new List<Broker>();
             
-            aBrokerList = (from aBroker in aDBContext.Brokers where 
-                           aBroker.Broker_GUID.Equals(tBroker.Broker_GUID) select aBroker).ToList();
+            //aBrokerList = (from aBroker in aDBContext.Brokers where 
+            //               aBroker.Broker_GUID.Equals(tBroker.Broker_GUID) select aBroker).ToList();
 
             if (aBrokerList.Count == 0)
             {

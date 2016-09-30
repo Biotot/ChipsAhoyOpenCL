@@ -28,7 +28,7 @@ typedef struct BrokerStruct {
 	double m_ProfitPerShare;
 	double m_BudgetPerMarket;
 	double m_BrokerScore;
-	double m_Settings[50];
+	double m_Settings[51];
 	int m_MarketCount;
 	int m_SettingsCount;
 	int m_ShareCount;

@@ -5,8 +5,6 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
     <Schema Namespace="DBChocolateChips.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'DBChocolateChips.dbo.Action' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="Action">
           <Key>
             <PropertyRef Name="ActionID" />
@@ -22,8 +20,6 @@ warning 6002: The table/view 'DBChocolateChips.dbo.Action' does not have a prima
           <Property Name="Value" Type="float" />
           <Property Name="Budget" Type="float" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'DBChocolateChips.dbo.Broker' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="Broker">
           <Key>
             <PropertyRef Name="Broker_ID" />
@@ -87,8 +83,6 @@ warning 6002: The table/view 'DBChocolateChips.dbo.Broker' does not have a prima
           <Property Name="Broker_Setting_49" Type="float" />
           <Property Name="Broker_Setting_50" Type="float" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'DBChocolateChips.dbo.Market' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="Market">
           <Key>
             <PropertyRef Name="Market_ID" />
@@ -99,9 +93,8 @@ warning 6002: The table/view 'DBChocolateChips.dbo.Market' does not have a prima
           <Property Name="MarketProfit" Type="float" />
           <Property Name="MarketShareCount" Type="int" />
           <Property Name="MarketDepth" Type="int" />
+          <Property Name="MarketProfitPerShare" Type="decimal" Precision="18" Scale="2" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'DBChocolateChips.dbo.PricePoint' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="PricePoint">
           <Key>
             <PropertyRef Name="PricePoint_ID" />
@@ -119,18 +112,69 @@ warning 6002: The table/view 'DBChocolateChips.dbo.PricePoint' does not have a p
           <Property Name="PricePoint_SellAll" Type="int" />
           <Property Name="PricePoint_SellSplit" Type="int" />
         </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'DBChocolateChips.dbo.Summary' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="Summary">
+          <Key>
+            <PropertyRef Name="SummaryID" />
+          </Key>
+          <Property Name="SummaryID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MarketSymbol" Type="nvarchar" MaxLength="50" />
+          <Property Name="Timestamp" Type="nvarchar" MaxLength="50" />
+          <Property Name="BuyCount" Type="int" />
+          <Property Name="SellCount" Type="int" />
+          <Property Name="ActionCount" Type="int" />
+          <Property Name="AverageProfitPerShare" Type="float" />
+          <Property Name="AverageProfit" Type="float" />
+          <Property Name="Margin" Type="float" />
+          <Property Name="BetterThanMargin" Type="bit" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6013: The table/view 'DBChocolateChips.dbo.Price_Overview' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+        <EntityType Name="Price_Overview">
+          <Property Name="TimeStamp" Type="nchar" MaxLength="50" />
+          <Property Name="MarketSymbol" Type="nchar" MaxLength="50" />
+          <Property Name="ActionCount" Type="int" />
+          <Property Name="Price" Type="float" />
+          <Property Name="BuyCount" Type="int" />
+          <Property Name="SellCount" Type="int" />
+          <Property Name="SellOldCount" Type="int" />
+          <Property Name="SellSplitCount" Type="int" />
+          <Property Name="SellEndCount" Type="int" />
+          <Property Name="Rating" Type="int" />
+          <Property Name="BuyRatio" Type="decimal" Precision="25" Scale="13" />
+          <Property Name="SellRatio" Type="decimal" Precision="25" Scale="13" />
+          <Property Name="BuyRisk" Type="decimal" Precision="26" Scale="13" />
+        </EntityType>-->
+        <Function Name="sp_ClenseMarkets" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <Function Name="sp_MarketView" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <Function Name="sp_PurgeDatabase" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="tPurgeBrokers" Type="bit" Mode="In" />
+          <Parameter Name="tPurgeMarkets" Type="bit" Mode="In" />
+          <Parameter Name="tPurgeActions" Type="bit" Mode="In" />
+        </Function>
+        <Function Name="UpdateSummaries" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="Margin" Type="int" Mode="In" />
+          <Parameter Name="BetterThanMargin" Type="bit" Mode="In" />
+        </Function>
         <EntityContainer Name="DBChocolateChipsStoreContainer">
-          <EntitySet Name="Action" EntityType="Self.Action" store:Type="Tables" Schema="dbo">
-           
-          </EntitySet>
-          <EntitySet Name="Broker" EntityType="Self.Broker" store:Type="Tables" Schema="dbo">
-            
-          </EntitySet>
-          <EntitySet Name="Market" EntityType="Self.Market" store:Type="Tables" Schema="dbo">
-            
-          </EntitySet>
-          <EntitySet Name="PricePoint" EntityType="Self.PricePoint" store:Type="Tables" Schema="dbo">
-            
+          <EntitySet Name="Action" EntityType="Self.Action" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Broker" EntityType="Self.Broker" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Market" EntityType="Self.Market" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PricePoint" EntityType="Self.PricePoint" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Summary" EntityType="Self.Summary" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [Summary].[SummaryID] AS [SummaryID], 
+    [Summary].[MarketSymbol] AS [MarketSymbol], 
+    [Summary].[Timestamp] AS [Timestamp], 
+    [Summary].[BuyCount] AS [BuyCount], 
+    [Summary].[SellCount] AS [SellCount], 
+    [Summary].[ActionCount] AS [ActionCount], 
+    [Summary].[AverageProfitPerShare] AS [AverageProfitPerShare], 
+    [Summary].[AverageProfit] AS [AverageProfit], 
+    [Summary].[Margin] AS [Margin], 
+    [Summary].[BetterThanMargin] AS [BetterThanMargin]
+    FROM [dbo].[Summary] AS [Summary]</DefiningQuery>
           </EntitySet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
@@ -138,10 +182,22 @@ warning 6002: The table/view 'DBChocolateChips.dbo.PricePoint' does not have a p
     <edmx:ConceptualModels>
       <Schema Namespace="DBChocolateChips" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="DBBroker" annotation:LazyLoadingEnabled="true">
+          <FunctionImport Name="sp_ClenseMarkets" />
+          <FunctionImport Name="sp_PurgeDatabase">
+            <Parameter Name="tPurgeBrokers" Mode="In" Type="Boolean" />
+            <Parameter Name="tPurgeMarkets" Mode="In" Type="Boolean" />
+            <Parameter Name="tPurgeActions" Mode="In" Type="Boolean" />
+          </FunctionImport>
+          <FunctionImport Name="sp_MarketView" />
           <EntitySet Name="Actions" EntityType="DBChocolateChips.Action" />
           <EntitySet Name="Brokers" EntityType="DBChocolateChips.Broker" />
-          <EntitySet Name="Markets" EntityType="DBChocolateChips.Market" />
           <EntitySet Name="PricePoints" EntityType="DBChocolateChips.PricePoint" />
+          <EntitySet Name="Summaries" EntityType="DBChocolateChips.Summary" />
+          <EntitySet Name="Markets" EntityType="DBChocolateChips.Market" />
+          <FunctionImport Name="UpdateSummaries">
+            <Parameter Name="Margin" Mode="In" Type="Int32" />
+            <Parameter Name="BetterThanMargin" Mode="In" Type="Boolean" />
+          </FunctionImport>
         </EntityContainer>
         <EntityType Name="Action">
           <Key>
@@ -221,17 +277,6 @@ warning 6002: The table/view 'DBChocolateChips.dbo.PricePoint' does not have a p
           <Property Name="Broker_Setting_49" Type="Double" />
           <Property Name="Broker_Setting_50" Type="Double" />
         </EntityType>
-        <EntityType Name="Market">
-          <Key>
-            <PropertyRef Name="Market_ID" />
-          </Key>
-          <Property Name="Market_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="MarketSymbol" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="BrokerGUID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="MarketProfit" Type="Double" />
-          <Property Name="MarketShareCount" Type="Int32" />
-          <Property Name="MarketDepth" Type="Int32" />
-        </EntityType>
         <EntityType Name="PricePoint">
           <Key>
             <PropertyRef Name="PricePoint_ID" />
@@ -249,12 +294,44 @@ warning 6002: The table/view 'DBChocolateChips.dbo.PricePoint' does not have a p
           <Property Name="PricePoint_SellAll" Type="Int32" />
           <Property Name="PricePoint_SellSplit" Type="Int32" />
         </EntityType>
+        <EntityType Name="Summary">
+          <Key>
+            <PropertyRef Name="SummaryID" />
+          </Key>
+          <Property Name="SummaryID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MarketSymbol" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Timestamp" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="BuyCount" Type="Int32" />
+          <Property Name="SellCount" Type="Int32" />
+          <Property Name="ActionCount" Type="Int32" />
+          <Property Name="AverageProfitPerShare" Type="Double" />
+          <Property Name="Margin" Type="Double" />
+          <Property Name="BetterThanMargin" Type="Boolean" />
+          <Property Name="AverageProfit" Type="Double" />
+        </EntityType>
+        <EntityType Name="Market">
+          <Key>
+            <PropertyRef Name="Market_ID" />
+          </Key>
+          <Property Name="Market_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MarketSymbol" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="BrokerGUID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="MarketProfit" Type="Double" />
+          <Property Name="MarketShareCount" Type="Int32" />
+          <Property Name="MarketDepth" Type="Int32" />
+          <Property Name="MarketProfitPerShare" Type="Decimal" Precision="18" Scale="2" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="DBChocolateChipsStoreContainer" CdmEntityContainer="DBBroker">
+          <FunctionImportMapping FunctionImportName="sp_ClenseMarkets" FunctionName="DBChocolateChips.Store.sp_ClenseMarkets">
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="sp_PurgeDatabase" FunctionName="DBChocolateChips.Store.sp_PurgeDatabase" />
+          <FunctionImportMapping FunctionImportName="sp_MarketView" FunctionName="DBChocolateChips.Store.sp_MarketView">
+          </FunctionImportMapping>
           <EntitySetMapping Name="Actions">
             <EntityTypeMapping TypeName="DBChocolateChips.Action">
               <MappingFragment StoreEntitySet="Action">
@@ -335,18 +412,6 @@ warning 6002: The table/view 'DBChocolateChips.dbo.PricePoint' does not have a p
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Markets">
-            <EntityTypeMapping TypeName="DBChocolateChips.Market">
-              <MappingFragment StoreEntitySet="Market">
-                <ScalarProperty Name="MarketDepth" ColumnName="MarketDepth" />
-                <ScalarProperty Name="MarketShareCount" ColumnName="MarketShareCount" />
-                <ScalarProperty Name="MarketProfit" ColumnName="MarketProfit" />
-                <ScalarProperty Name="BrokerGUID" ColumnName="BrokerGUID" />
-                <ScalarProperty Name="MarketSymbol" ColumnName="MarketSymbol" />
-                <ScalarProperty Name="Market_ID" ColumnName="Market_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="PricePoints">
             <EntityTypeMapping TypeName="DBChocolateChips.PricePoint">
               <MappingFragment StoreEntitySet="PricePoint">
@@ -365,6 +430,36 @@ warning 6002: The table/view 'DBChocolateChips.dbo.PricePoint' does not have a p
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="Summaries">
+            <EntityTypeMapping TypeName="DBChocolateChips.Summary">
+              <MappingFragment StoreEntitySet="Summary">
+                <ScalarProperty Name="AverageProfit" ColumnName="AverageProfit" />
+                <ScalarProperty Name="BetterThanMargin" ColumnName="BetterThanMargin" />
+                <ScalarProperty Name="Margin" ColumnName="Margin" />
+                <ScalarProperty Name="AverageProfitPerShare" ColumnName="AverageProfitPerShare" />
+                <ScalarProperty Name="ActionCount" ColumnName="ActionCount" />
+                <ScalarProperty Name="SellCount" ColumnName="SellCount" />
+                <ScalarProperty Name="BuyCount" ColumnName="BuyCount" />
+                <ScalarProperty Name="Timestamp" ColumnName="Timestamp" />
+                <ScalarProperty Name="MarketSymbol" ColumnName="MarketSymbol" />
+                <ScalarProperty Name="SummaryID" ColumnName="SummaryID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Markets">
+            <EntityTypeMapping TypeName="DBChocolateChips.Market">
+              <MappingFragment StoreEntitySet="Market">
+                <ScalarProperty Name="MarketProfitPerShare" ColumnName="MarketProfitPerShare" />
+                <ScalarProperty Name="MarketDepth" ColumnName="MarketDepth" />
+                <ScalarProperty Name="MarketShareCount" ColumnName="MarketShareCount" />
+                <ScalarProperty Name="MarketProfit" ColumnName="MarketProfit" />
+                <ScalarProperty Name="BrokerGUID" ColumnName="BrokerGUID" />
+                <ScalarProperty Name="MarketSymbol" ColumnName="MarketSymbol" />
+                <ScalarProperty Name="Market_ID" ColumnName="Market_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="UpdateSummaries" FunctionName="DBChocolateChips.Store.UpdateSummaries" />
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>
@@ -380,7 +475,7 @@ warning 6002: The table/view 'DBChocolateChips.dbo.PricePoint' does not have a p
       <DesignerInfoPropertySet>
         <DesignerProperty Name="ValidateOnBuild" Value="true" />
         <DesignerProperty Name="EnablePluralization" Value="true" />
-        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
         <DesignerProperty Name="UseLegacyProvider" Value="false" />
         <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
       </DesignerInfoPropertySet>

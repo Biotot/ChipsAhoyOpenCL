@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="MarketViewModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <Function Name="sp_MarketView" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <EntityContainer Name="MarketViewModelStoreContainer" />
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="MarketViewModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="DBChocolateChipsEntities2" annotation:LazyLoadingEnabled="true" >
+          <FunctionImport Name="sp_MarketView" ReturnType="Collection(MarketViewModel.sp_MarketView_Result)" />
+        </EntityContainer>
+        <ComplexType Name="sp_MarketView_Result">
+          <Property Type="String" Name="Timestamp" Nullable="true" MaxLength="50" />
+          <Property Type="String" Name="MarketSymbol" Nullable="true" MaxLength="50" />
+          <Property Type="Int32" Name="ActionCount" Nullable="true" />
+          <Property Type="Double" Name="Price" Nullable="true" />
+          <Property Type="Int32" Name="BuyCount" Nullable="true" />
+          <Property Type="Int32" Name="SellCount" Nullable="true" />
+          <Property Type="Int32" Name="SellOldCount" Nullable="true" />
+          <Property Type="Int32" Name="SellSplitCount" Nullable="true" />
+          <Property Type="Int32" Name="SellEndCount" Nullable="true" />
+          <Property Type="Int32" Name="Rating" Nullable="true" />
+          <Property Type="Decimal" Name="BuyRatio" Nullable="true" Precision="19" Scale="13" />
+          <Property Type="Decimal" Name="SellRatio" Nullable="true" Precision="19" Scale="13" />
+          <Property Type="Decimal" Name="BuyRisk" Nullable="true" Precision="20" Scale="13" />
+        </ComplexType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="MarketViewModelStoreContainer" CdmEntityContainer="DBChocolateChipsEntities2" >
+          <FunctionImportMapping FunctionImportName="sp_MarketView" FunctionName="MarketViewModel.Store.sp_MarketView">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="MarketViewModel.sp_MarketView_Result">
+                <ScalarProperty Name="Timestamp" ColumnName="Timestamp" />
+                <ScalarProperty Name="MarketSymbol" ColumnName="MarketSymbol" />
+                <ScalarProperty Name="ActionCount" ColumnName="ActionCount" />
+                <ScalarProperty Name="Price" ColumnName="Price" />
+                <ScalarProperty Name="BuyCount" ColumnName="BuyCount" />
+                <ScalarProperty Name="SellCount" ColumnName="SellCount" />
+                <ScalarProperty Name="SellOldCount" ColumnName="SellOldCount" />
+                <ScalarProperty Name="SellSplitCount" ColumnName="SellSplitCount" />
+                <ScalarProperty Name="SellEndCount" ColumnName="SellEndCount" />
+                <ScalarProperty Name="Rating" ColumnName="Rating" />
+                <ScalarProperty Name="BuyRatio" ColumnName="BuyRatio" />
+                <ScalarProperty Name="SellRatio" ColumnName="SellRatio" />
+                <ScalarProperty Name="BuyRisk" ColumnName="BuyRisk" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="false" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

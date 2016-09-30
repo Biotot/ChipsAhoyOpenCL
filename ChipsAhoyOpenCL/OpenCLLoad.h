@@ -22,13 +22,23 @@ class OpenCLLoad
 {
 public:
 	cl::Device m_Device;
+	cl::CommandQueue m_Queue;
+	cl::Context m_Context;
+	cl::Program m_Program;
 	string m_KernalCode;
+	cl::Buffer m_BrokerBuffer;
+	vector<cl::Buffer> m_MarketBufferList;
+	vector<cl::Buffer> m_MarketDifferenceBufferList;
+	vector<cl::Buffer> m_CountBufferList;
 	OpenCLLoad();
+	void Setup(int tPlatform, int tDevice);
 	~OpenCLLoad();
-	void RunBrokers(Broker* tBrokerList, int tBrokerCount, Market* tMarketList, int tMarketCount);
+	void RunBrokers(Broker* tBrokerList, int tBrokerCount);
+	void CalcMarketDifferences(const MarketPrice* tMarketPriceList, MarketPrice* tMarketChanges, const int *tMarketPriceCount);
 	void TestRun(Broker* tBrokerList, int tBrokerCount, Market* tMarketList, int tMarketCount);
-	boost::property_tree::ptree DisplayBestBroker(Broker *tBroker, Market tMarket);
+	boost::property_tree::ptree DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice* tMarketDifferenceList);
 	void Log(string tMessage, string tMarketName, bool tAppend=true);
 	PriceAverage CalcDPrice(PriceAverage tCurrentDay, PriceAverage tPrevDay);
+	void LoadMarkets(Market* tMarketList, int tMarketCount, int tBrokerCount);
 	boost::property_tree::ptree CreateNode(string tBrokerAction, string tTimeStamp, double tBudget, double aPrice, int tShareCount, double tInvestment, double tValue);
 };

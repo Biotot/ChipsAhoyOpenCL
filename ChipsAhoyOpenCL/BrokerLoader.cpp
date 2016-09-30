@@ -42,7 +42,7 @@ std::vector<std::string> BrokerLoader::LoadSavedBrokers(std::string tFileName)
 Broker BrokerLoader::ParseXML(std::string tFileName)
 {
 	ptree aBrokerTree;
-	std::ifstream aFileStream("Broker\\Saved\\"+tFileName);
+	std::ifstream aFileStream("Broker\\"+tFileName);
 	read_xml(aFileStream, aBrokerTree);
 	Broker aBroker;
 	// traverse pt
@@ -59,12 +59,12 @@ Broker BrokerLoader::ParseXML(std::string tFileName)
 			///aBroker.m_AlgorithmID = aValue.second.get<int>("AlgorithmID");
 
 			aBroker.m_Budget = 0;
-			aBroker.m_BudgetPerMarket = 10000;
+			aBroker.m_BudgetPerMarket = 1000000;
 			aBroker.m_ProfitPerShare = 0;
 			aBroker.m_NetWorth = 0;
 			aBroker.m_TotalProfit = 0;
 			aBroker.m_BrokerScore = 0;
-			aBroker.m_SettingsCount = 50;
+			aBroker.m_SettingsCount = 51;
 			aBroker.m_TotalShareCount = 0;
 			int aSettingCount = 0;
 			ptree aSettingsNode = aValue.second.get_child("Settings");

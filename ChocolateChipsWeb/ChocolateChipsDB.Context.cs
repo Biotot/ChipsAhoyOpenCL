@@ -12,6 +12,8 @@ namespace ChocolateChipsWeb
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
+    using System.Data.Entity.Core.Objects;
+    using System.Linq;
     
     public partial class DBBroker : DbContext
     {
@@ -27,7 +29,48 @@ namespace ChocolateChipsWeb
     
         public virtual DbSet<Action> Actions { get; set; }
         public virtual DbSet<Broker> Brokers { get; set; }
-        public virtual DbSet<Market> Markets { get; set; }
         public virtual DbSet<PricePoint> PricePoints { get; set; }
+        public virtual DbSet<Summary> Summaries { get; set; }
+        public virtual DbSet<Market> Markets { get; set; }
+    
+        public virtual int sp_ClenseMarkets()
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("sp_ClenseMarkets");
+        }
+    
+        public virtual int sp_PurgeDatabase(Nullable<bool> tPurgeBrokers, Nullable<bool> tPurgeMarkets, Nullable<bool> tPurgeActions)
+        {
+            var tPurgeBrokersParameter = tPurgeBrokers.HasValue ?
+                new ObjectParameter("tPurgeBrokers", tPurgeBrokers) :
+                new ObjectParameter("tPurgeBrokers", typeof(bool));
+    
+            var tPurgeMarketsParameter = tPurgeMarkets.HasValue ?
+                new ObjectParameter("tPurgeMarkets", tPurgeMarkets) :
+                new ObjectParameter("tPurgeMarkets", typeof(bool));
+    
+            var tPurgeActionsParameter = tPurgeActions.HasValue ?
+                new ObjectParameter("tPurgeActions", tPurgeActions) :
+                new ObjectParameter("tPurgeActions", typeof(bool));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("sp_PurgeDatabase", tPurgeBrokersParameter, tPurgeMarketsParameter, tPurgeActionsParameter);
+        }
+    
+        public virtual int sp_MarketView()
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("sp_MarketView");
+        }
+    
+        public virtual int UpdateSummaries(Nullable<int> margin, Nullable<bool> betterThanMargin)
+        {
+            var marginParameter = margin.HasValue ?
+                new ObjectParameter("Margin", margin) :
+                new ObjectParameter("Margin", typeof(int));
+    
+            var betterThanMarginParameter = betterThanMargin.HasValue ?
+                new ObjectParameter("BetterThanMargin", betterThanMargin) :
+                new ObjectParameter("BetterThanMargin", typeof(bool));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("UpdateSummaries", marginParameter, betterThanMarginParameter);
+        }
     }
 }

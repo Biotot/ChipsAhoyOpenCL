@@ -47,9 +47,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CLKernal.cl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="App.config" />
     <None Include="packages.config" />
     <None Include="Scripts\SyntaxHighlighter\styles\shThemeRDark.css">
@@ -186,6 +183,9 @@
     </None>
     <None Include="Scripts\SyntaxHighlighter\scripts\shAutoloader.js">
       <Filter>Scripts\SyntaxHighlighter\scripts</Filter>
+    </None>
+    <None Include="CLKernal.cl">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

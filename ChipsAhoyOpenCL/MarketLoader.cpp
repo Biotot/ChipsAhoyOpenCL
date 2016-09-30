@@ -7,20 +7,29 @@ MarketLoader::MarketLoader()
 
 MarketLoader::MarketLoader(string tMarketName, int tYear, int tMarketNum)
 {
+
+	string aMarketCommand = tMarketName;
+	int aIndex = tMarketName.find('^');
+	if (aIndex != std::string::npos)
+	{
+		(aMarketCommand).insert(aIndex, "^");
+	}
+
+
 	//system("E:\\Development\\ChocolateChips\\ChocolateChips\\bin\\Debug\\DataDump.bat");
 	cout << "Loading: " << tMarketName << "\t";
 	string aCommand;
 	if (tYear == 0)
 	{
-		aCommand = "DataDump.bat \"" + tMarketName + "\"";
+		aCommand = "DataDump.bat \"" + aMarketCommand + "\"";
 	}
 	else
 	{
-		aCommand = "DataDumpVar.bat \"" + tMarketName + "\" " + to_string(tYear);
+		aCommand = "DataDumpVar.bat \"" + aMarketCommand + "\" " + to_string(tYear);
 	}
 
 
-	string aFileName = "Markets\\"+tMarketName + to_string(tYear) + ".csv";
+	string aFileName = "Markets\\"+ tMarketName + to_string(tYear) + ".csv";
 	ifstream aCheckFile(aFileName.c_str());
 	if (!aCheckFile.good())
 	{

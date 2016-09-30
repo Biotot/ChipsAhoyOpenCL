@@ -23,8 +23,9 @@ public:
 	SimControl();
 	~SimControl();
 	void Run(int aSimDepth, int tBrokerCount);
+	void UpdateBrokers(vector<std::string> tBrokerFileList);
 	double GetTime();
-	void SetMarketList(int tSimDepth);
+	void SetMarketList(int tSimDepth, int tPlatform, int tDevice, int tBrokerCount);
 	std::string LogBroker(Broker tBroker, std::string tMessage, bool tWrite);
 	void Log(std::string tLog, bool tConsole, std::string tFileName);
 	void ReworkBrokerList(Broker* tBrokerList, Broker *tBestBroker, int tBrokerCount, int tMarketCount, double tRange);
@@ -32,6 +33,7 @@ public:
 	Broker CalcDeviations(Broker* tBrokerList, int tBrokerCount);
 	Broker CalcDeviations(std::vector<Broker> tBrokerList, int tBrokerCount);
 	boost::property_tree::ptree BrokerSettingsToNode(Broker tBroker);
+	void SetDefaultBroker();
 	//string LogBest(Broker tBroker);
 	//string LogBroker(Broker tBroker);
 };
