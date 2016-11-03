@@ -36,7 +36,8 @@ public:
 	void RunBrokers(Broker* tBrokerList, int tBrokerCount);
 	void CalcMarketDifferences(const MarketPrice* tMarketPriceList, MarketPrice* tMarketChanges, const int *tMarketPriceCount);
 	void TestRun(Broker* tBrokerList, int tBrokerCount, Market* tMarketList, int tMarketCount);
-	boost::property_tree::ptree DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice* tMarketDifferenceList, bool tDisplayActions);
+	boost::property_tree::ptree LogLongTermBroker(Broker *tBroker, Market tMarket, MarketPrice* tMarketDifferenceList, bool tDisplayActions);
+	boost::property_tree::ptree LogShortTermBroker(Broker *tBroker, Market tMarket, MarketPrice* tMarketDifferenceList, bool tDisplayActions, int tHoldDays);
 	void Log(string tMessage, string tMarketName, bool tAppend=true);
 	PriceAverage CalcDPrice(PriceAverage tCurrentDay, PriceAverage tPrevDay);
 	void LoadMarkets(Market* tMarketList, int tMarketCount, int tBrokerCount);
