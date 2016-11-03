@@ -107,6 +107,7 @@ namespace ChocolateChipsWeb.Controllers
 
                 }
 
+                aDB.Database.ExecuteSqlCommand("LoadSummaryList");
                 //aDB.sp_ClenseMarkets();
                 //aDB.Database.ExecuteSqlCommand("sp_ClenseMarkets");
             }
@@ -153,23 +154,23 @@ namespace ChocolateChipsWeb.Controllers
 
                                     bool aDeleted = false;
 
-                                    while (!aDeleted)
-                                    {
-                                        try
-                                        {
+                                    //while (!aDeleted)
+                                    //{
+                                    //    try
+                                    //    {
 
-                                            //aDBContext.Actions.Where(aAction => aAction.BrokerGUID == aCurrentBroker.Broker_GUID).del;
-                                            //aDBContext.Actions.RemoveRange(aDBContext.Actions.Where(aAction => aAction.BrokerGUID.Equals(aCurrentBroker.Broker_GUID)));
-                                            //aDBContext.Brokers.RemoveRange(aDBContext.Brokers.Where(aBroker => aBroker.Broker_GUID.Equals(aCurrentBroker.Broker_GUID)));
-                                            //aDBContext.Markets.RemoveRange(aDBContext.Markets.Where(aMarket => aMarket.BrokerGUID.Equals(aCurrentBroker.Broker_GUID)));
-                                            //aDBContext.SaveChanges();
-                                            aDeleted = true;
-                                        }
-                                        catch (Exception e)
-                                        {
+                                    //        //aDBContext.Actions.Where(aAction => aAction.BrokerGUID == aCurrentBroker.Broker_GUID).del;
+                                    //        //aDBContext.Actions.RemoveRange(aDBContext.Actions.Where(aAction => aAction.BrokerGUID.Equals(aCurrentBroker.Broker_GUID)));
+                                    //        //aDBContext.Brokers.RemoveRange(aDBContext.Brokers.Where(aBroker => aBroker.Broker_GUID.Equals(aCurrentBroker.Broker_GUID)));
+                                    //        //aDBContext.Markets.RemoveRange(aDBContext.Markets.Where(aMarket => aMarket.BrokerGUID.Equals(aCurrentBroker.Broker_GUID)));
+                                    //        //aDBContext.SaveChanges();
+                                    //        aDeleted = true;
+                                    //    }
+                                    //    catch (Exception e)
+                                    //    {
 
-                                        }
-                                    }
+                                    //    }
+                                    //}
                                     break;
 
                                 case "TotalProfit":
@@ -457,13 +458,44 @@ namespace ChocolateChipsWeb.Controllers
                                                         }
                                                         else if (aReader.Name == "ProfitPerShare")
                                                         {
-                                                            aReader.Read();
-                                                            decimal aProfitPerShare = decimal.Parse(aReader.Value);
-                                                            aCurrentMarket.MarketProfitPerShare = aProfitPerShare;
-                                                            //aCurrentMarket.MarketDepth = (int)Math.Floor(aProfitPerShare);
+                                                            if (aReader.Read())
+                                                            {
+                                                                Decimal aProfitPerShare = 0;
+                                                                if (Decimal.TryParse(aReader.Value, out aProfitPerShare))
+                                                                {
+                                                                    aCurrentMarket.MarketProfitPerShare = aProfitPerShare;
+                                                                }
+                                                                else
+                                                                {
+                                                                    aCurrentMarket.MarketProfitPerShare = aProfitPerShare;
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                aCurrentMarket.MarketProfitPerShare = 0;
+                                                            }
+                                                        }
+                                                        else if (aReader.Name == "PercentReturn")
+                                                        {
+                                                            if (aReader.Read())
+                                                            {
+                                                                double aPercentReturn = 0;
+                                                                if (Double.TryParse(aReader.Value, out aPercentReturn))
+                                                                {
+                                                                    aCurrentMarket.MarketPercentReturn = aPercentReturn;
+                                                                }
+                                                                else
+                                                                {
+                                                                    aCurrentMarket.MarketPercentReturn = aPercentReturn;
+                                                                }
+                                                                //aCurrentMarket.MarketDepth = (int)Math.Floor(aProfitPerShare);
 
+                                                            }
+                                                            else
+                                                            {
+                                                                aCurrentMarket.MarketPercentReturn = 0;
+                                                            }
                                                             aMarketList.Add(aCurrentMarket);
-                                                            
                                                         }
                                                     }
                                                     else

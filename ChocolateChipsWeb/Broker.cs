@@ -72,5 +72,6 @@ namespace ChocolateChipsWeb
         public Nullable<double> Broker_Setting_48 { get; set; }
         public Nullable<double> Broker_Setting_49 { get; set; }
         public Nullable<double> Broker_Setting_50 { get; set; }
+        public Nullable<double> Broker_PercentReturn { get; set; }
     }
 }

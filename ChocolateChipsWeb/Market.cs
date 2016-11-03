@@ -21,5 +21,6 @@ namespace ChocolateChipsWeb
         public Nullable<int> MarketShareCount { get; set; }
         public Nullable<int> MarketDepth { get; set; }
         public Nullable<decimal> MarketProfitPerShare { get; set; }
+        public Nullable<double> MarketPercentReturn { get; set; }
     }
 }

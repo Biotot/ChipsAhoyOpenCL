@@ -42,9 +42,6 @@
     <ClCompile Include="BrokerLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KernalClone.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -208,9 +205,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BrokerLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KernalClone.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

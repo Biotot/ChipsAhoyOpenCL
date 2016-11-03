@@ -59,10 +59,7 @@ void OpenCLLoad::Setup(int tPlatform, int tDevice)
 			aDeviceSelected = true;
 		}
 
-
-		std::cout << "Selected Device: " << m_Device.getInfo<CL_DEVICE_NAME>() << "\n";
 	}
-
 
 	string aFileName = "CLKernal.cl";
 	std::ifstream in;
@@ -73,6 +70,8 @@ void OpenCLLoad::Setup(int tPlatform, int tDevice)
 	aPlatforms[tPlatform].getDevices(CL_DEVICE_TYPE_ALL, &aDevices);
 	m_Device = aDevices[tDevice];
 
+
+	std::cout << "Selected Device: " << m_Device.getInfo<CL_DEVICE_NAME>() << "\n";
 	m_Context = cl::Context({ m_Device });
 	cl::Program::Sources aSource;
 
@@ -179,6 +178,7 @@ void OpenCLLoad::LoadMarkets(Market* tMarketList, int tMarketCount, int tBrokerC
 	cl_int aResult;
 	for (int x = 0; x < tMarketCount; x++)
 	{
+		Market aTempMarket = tMarketList[x];
 		cl::Buffer aMarketBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(MarketPrice)*tMarketList[x].m_MarketPriceCount);
 		cl::Buffer aPriceCountBuffer(m_Context, CL_MEM_READ_WRITE, sizeof(int));
 		aResult = m_Queue.enqueueWriteBuffer(aMarketBuffer, CL_TRUE, 0, sizeof(MarketPrice)*tMarketList[x].m_MarketPriceCount, tMarketList[x].PriceList);
@@ -233,20 +233,21 @@ void OpenCLLoad::RunBrokers(Broker* tBrokerList, int tBrokerCount)
 		kernel_add.setArg(1, m_MarketBufferList[x]);
 		kernel_add.setArg(2, m_CountBufferList[x]);
 		kernel_add.setArg(3, m_MarketDifferenceBufferList[x]);
-		vector<cl::Memory, std::allocator<cl::Memory>> aBuffer;
-		m_Queue.enqueueAcquireGLObjects(&aBuffer, NULL, NULL);
+		//vector<cl::Memory, std::allocator<cl::Memory>> aBuffer;
+		//m_Queue.enqueueAcquireGLObjects(&aBuffer, NULL, NULL);
 		aResult = m_Queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(tBrokerCount), cl::NullRange);
-		m_Queue.enqueueReleaseGLObjects(&aBuffer, NULL, NULL);
+		//m_Queue.enqueueReleaseGLObjects(&aBuffer, NULL, NULL);
 		if (aResult != CL_SUCCESS)
 		{
 			cout << "FAILED TO ENQUEUE NEW TASK:  " + aResult << endl;
 		}
-		aResult = m_Queue.finish();
+		//aResult = m_Queue.finish();
 		if (aResult != CL_SUCCESS)
 		{
 			cout << "FAILED TO COMPLETE NEW TASK:  " + aResult << endl;
 		}
 	}
+	aResult = m_Queue.finish();
 	m_Queue.enqueueReadBuffer(m_BrokerBuffer, CL_TRUE, 0, sizeof(Broker)*tBrokerCount, tBrokerList);
 
 	//
@@ -292,16 +293,12 @@ void OpenCLLoad::CalcMarketDifferences(const MarketPrice* tMarketPriceList, Mark
 		MarketPrice.m_High = CalcDPrice(tMarketPriceList[x].m_High, tMarketPriceList[x-1].m_High);
 		MarketPrice.m_Low = CalcDPrice(tMarketPriceList[x].m_Low, tMarketPriceList[x-1].m_Low);
 		MarketPrice.m_Volume = CalcDPrice(tMarketPriceList[x].m_Volume, tMarketPriceList[x-1].m_Volume);
-/*
-		if (x > 360)
-		{
-			x++;
-		}*/
+
 		tMarketChanges[x] = MarketPrice;
 	}
 }
 
-ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice* tMarketDifferenceList)
+ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice* tMarketDifferenceList, bool tDisplayActions)
 {
 	Broker aSimBroker = *tBroker;
 	string aMarketName(tMarket.m_MarketName);
@@ -316,7 +313,15 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 	int aOldestStock = 0;
 	aSimBroker.m_Budget = aSimBroker.m_BudgetPerMarket;
 	aSimBroker.m_NetWorth = 0;
+	aSimBroker.m_Investment = 0;
 	int aMarketStockCount = 0;
+
+	//ALTER SO THAT IT INCRIMENTS m_TotalInvestment daily. 
+	//
+
+
+
+
 
 	ptree aMarketXML;
 	aMarketXML.add("MarketActions.<xmlattr>.Name", string(tMarket.m_MarketName).substr(0, 15));
@@ -346,7 +351,7 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 		bool aSellEnd = false;
 
 		aMarketStockCount++;
-		if (aMarketStockCount < 365)
+		if (aMarketStockCount < 250)
 		{
 			aValid = false;
 		}
@@ -428,21 +433,33 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 			aDecisionPoint += aDVolume.m_Avg6Month*aSimBroker.m_Settings[30];
 			aDecisionPoint += aDVolume.m_Avg1Year*aSimBroker.m_Settings[31];
 
+			aDecisionPoint += (aDOpen.m_Price - aDOpen.m_Avg5Day)*aSimBroker.m_Settings[32];
+			aDecisionPoint += (aDOpen.m_Avg5Day - aDOpen.m_Avg15Day)*aSimBroker.m_Settings[33];
+			aDecisionPoint += (aDOpen.m_Avg15Day - aDOpen.m_Avg30Day)*aSimBroker.m_Settings[34];
+			aDecisionPoint += (aDOpen.m_Avg30Day - aDOpen.m_Avg3Month)*aSimBroker.m_Settings[35];
+			aDecisionPoint += (aDOpen.m_Avg3Month - aDOpen.m_Avg6Month)*aSimBroker.m_Settings[36];
+			aDecisionPoint += (aDOpen.m_Avg6Month - aDOpen.m_Avg1Year)*aSimBroker.m_Settings[37];
 
-			aDecisionPoint += (aDOpen.m_Avg5Day - aDOpen.m_Avg15Day)*aSimBroker.m_Settings[32];
-			aDecisionPoint += (aDOpen.m_Avg15Day - aDOpen.m_Avg30Day)*aSimBroker.m_Settings[33];
-			aDecisionPoint += (aDHigh.m_Avg5Day - aDHigh.m_Avg15Day)*aSimBroker.m_Settings[34];
-			aDecisionPoint += (aDHigh.m_Avg15Day - aDHigh.m_Avg30Day)*aSimBroker.m_Settings[35];
-			aDecisionPoint += (aDLow.m_Avg5Day - aDLow.m_Avg15Day)*aSimBroker.m_Settings[36];
-			aDecisionPoint += (aDLow.m_Avg15Day - aDLow.m_Avg30Day)*aSimBroker.m_Settings[37];
-			aDecisionPoint += (aDClose.m_Avg5Day - aDClose.m_Avg15Day)*aSimBroker.m_Settings[38];
-			aDecisionPoint += (aDClose.m_Avg15Day - aDClose.m_Avg30Day)*aSimBroker.m_Settings[39];
+			aDecisionPoint += (aDClose.m_Price - aDClose.m_Avg5Day)*aSimBroker.m_Settings[38];
+			aDecisionPoint += (aDClose.m_Avg5Day - aDClose.m_Avg15Day)*aSimBroker.m_Settings[39];
+			aDecisionPoint += (aDClose.m_Avg15Day - aDClose.m_Avg30Day)*aSimBroker.m_Settings[40];
+			aDecisionPoint += (aDClose.m_Avg30Day - aDClose.m_Avg3Month)*aSimBroker.m_Settings[41];
+			aDecisionPoint += (aDClose.m_Avg3Month - aDClose.m_Avg6Month)*aSimBroker.m_Settings[42];
+			aDecisionPoint += (aDClose.m_Avg6Month - aDClose.m_Avg1Year)*aSimBroker.m_Settings[43];
 
-			aDecisionPoint += (aDOpen.m_Avg5Day - aDClose.m_Avg5Day)*aSimBroker.m_Settings[40];
-			aDecisionPoint += (aDOpen.m_Avg15Day - aDClose.m_Avg15Day)*aSimBroker.m_Settings[41];
+			aDecisionPoint += (aDHigh.m_Price - aDHigh.m_Avg5Day)*aSimBroker.m_Settings[44];
+			aDecisionPoint += (aDHigh.m_Avg5Day - aDHigh.m_Avg15Day)*aSimBroker.m_Settings[45];
+			aDecisionPoint += (aDHigh.m_Avg15Day - aDHigh.m_Avg30Day)*aSimBroker.m_Settings[46];
+			aDecisionPoint += (aDHigh.m_Avg30Day - aDHigh.m_Avg3Month)*aSimBroker.m_Settings[47];
+			aDecisionPoint += (aDHigh.m_Avg3Month - aDHigh.m_Avg6Month)*aSimBroker.m_Settings[48];
+			aDecisionPoint += (aDHigh.m_Avg6Month - aDHigh.m_Avg1Year)*aSimBroker.m_Settings[49];
 
-			aDecisionPoint += (aDHigh.m_Avg5Day - aDLow.m_Avg5Day)*aSimBroker.m_Settings[42];
-			aDecisionPoint += (aDHigh.m_Avg15Day - aDLow.m_Avg15Day)*aSimBroker.m_Settings[43];
+			aDecisionPoint += (aDClose.m_Price - aDClose.m_Avg5Day)*aSimBroker.m_Settings[50];
+			aDecisionPoint += (aDClose.m_Avg5Day - aDClose.m_Avg15Day)*aSimBroker.m_Settings[51];
+			aDecisionPoint += (aDClose.m_Avg15Day - aDClose.m_Avg30Day)*aSimBroker.m_Settings[52];
+			aDecisionPoint += (aDClose.m_Avg30Day - aDClose.m_Avg3Month)*aSimBroker.m_Settings[53];
+			aDecisionPoint += (aDClose.m_Avg3Month - aDClose.m_Avg6Month)*aSimBroker.m_Settings[54];
+			aDecisionPoint += (aDClose.m_Avg6Month - aDClose.m_Avg1Year)*aSimBroker.m_Settings[55];
 
 			if (aDecisionPoint > aBuyPoint)
 			{
@@ -472,11 +489,14 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 		{
 			if (aSimBroker.m_Budget > tMarketPriceList[y].m_Close.m_Price)
 			{
-				aInvestment += tMarketPriceList[y].m_Close.m_Price;
+				aSimBroker.m_Investment += tMarketPriceList[y].m_Close.m_Price;
+				//aSimBroker.m_TotalInvestment += tMarketPriceList[y].m_Close.m_Price;
+
 				string aTimestamp(tMarketPriceList[y].m_Timestamp);
 				string aAction = "Buy";
-				ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aInvestment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
+				ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
 				aMarketXML.add_child("MarketActions.Action", aNode);
+
 
 				aSimBroker.m_ShareCount++;
 				aSimBroker.m_TotalShareCount++;
@@ -491,10 +511,11 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 			{
 				string aTimestamp(tMarketPriceList[y].m_Timestamp);
 				string aAction = "Sell";
-				ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aInvestment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
+				ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
 				aMarketXML.add_child("MarketActions.Action", aNode);
-				Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aInvestment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
-				aInvestment -= tMarketPriceList[y].m_Close.m_Price;
+				Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aSimBroker.m_Investment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
+				aSimBroker.m_Investment -= tMarketPriceList[y].m_Close.m_Price;
+				//aSimBroker.m_TotalInvestment -= tMarketPriceList[y].m_Close.m_Price;
 
 				aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price;
 				aSimBroker.m_ShareCount--;
@@ -505,10 +526,12 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 		{
 			string aTimestamp(tMarketPriceList[y].m_Timestamp);
 			string aAction = "Sell OLD";
-			ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aInvestment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
+			ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
 			aMarketXML.add_child("MarketActions.Action", aNode);
-			Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aInvestment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
-			aInvestment = 0;
+			Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aSimBroker.m_Investment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
+
+			//aSimBroker.m_TotalInvestment -= tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount; 
+			aSimBroker.m_Investment = 0;
 
 			aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_ShareCount = 0;
@@ -518,10 +541,12 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 		{
 			string aTimestamp(tMarketPriceList[y].m_Timestamp);
 			string aAction = "Sell SPLIT";
-			ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aInvestment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
+			ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
 			aMarketXML.add_child("MarketActions.Action", aNode);
-			Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y - 1].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aInvestment) + " : " + to_string((tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
-			aInvestment = 0;
+			Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y - 1].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aSimBroker.m_Investment) + " : " + to_string((tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
+
+			//aSimBroker.m_TotalInvestment -= tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount; 
+			aSimBroker.m_Investment = 0;
 
 			//aSimBroker.m_ShareCount += aSimBroker.m_ShareCount;
 			aSimBroker.m_Budget += tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount;
@@ -532,10 +557,11 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 		{
 			string aTimestamp(tMarketPriceList[y].m_Timestamp);
 			string aAction = "Sell END";
-			ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aInvestment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
+			ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
 			aMarketXML.add_child("MarketActions.Action", aNode);
-			Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aInvestment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
-			aInvestment = 0;
+			Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aSimBroker.m_Investment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
+			//aSimBroker.m_TotalInvestment += aSimBroker.m_Investment;
+			aSimBroker.m_Investment = 0;
 
 			aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_NetWorth = aSimBroker.m_Budget;
@@ -543,6 +569,7 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 			aSimBroker.m_ShareCount = 0;
 			aOldestStock = y;
 		}
+		aSimBroker.m_TotalInvestment += aSimBroker.m_Investment;
 	}
 	Log("Final: " + to_string(aSimBroker.m_Budget - aSimBroker.m_BudgetPerMarket), aMarketName);
 
@@ -558,6 +585,11 @@ ptree OpenCLLoad::DisplayBestBroker(Broker *tBroker, Market tMarket, MarketPrice
 	{
 		aMarketDetails.add("ProfitPerShare", 0);
 	}
+	double aAverageInvestment = aSimBroker.m_TotalInvestment / tMarket.m_MarketPriceCount;
+	double aPercentReturn = aProfit / (aAverageInvestment*(tMarket.m_MarketPriceCount/ONEYEAR));
+
+	aMarketDetails.add("AverageInvestment", aAverageInvestment);
+	aMarketDetails.add("PercentReturn", aPercentReturn);
 	aMarketXML.add_child("MarketActions.Details", aMarketDetails);
 	*tBroker = aSimBroker;
 	return aMarketXML;

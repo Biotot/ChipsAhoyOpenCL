@@ -29,7 +29,10 @@ typedef struct BrokerStruct {
 	double m_ProfitPerShare;
 	double m_BudgetPerMarket;
 	double m_BrokerScore;
-	double m_Settings[51];
+	double m_Settings[56];
+	double m_TotalInvestment;
+	double m_Investment;
+	double m_PercentReturn;
 	int m_MarketCount;
 	int m_SettingsCount;
 	int m_ShareCount;
@@ -73,9 +76,8 @@ void kernel FullRun(global Broker* tBrokerList, global const MarketPrice* tMarke
 
 	Broker aSimBroker = tBrokerList[get_global_id(0)];
 	aSimBroker.m_BrokerNum = get_global_id(0);
-	aSimBroker.m_AlgorithmID = 7;
-
-
+	aSimBroker.m_AlgorithmID = 9;
+	aSimBroker.m_Investment = 0;
 	aSimBroker.m_Budget = aSimBroker.m_BudgetPerMarket;
 	aSimBroker.m_ShareCount = 0;
 	Market aMarket;
@@ -103,7 +105,7 @@ void kernel FullRun(global Broker* tBrokerList, global const MarketPrice* tMarke
 		bool aSellEnd = false;
 
 		aMarketStockCount++;
-		if (aMarketStockCount < 365)
+		if (aMarketStockCount < 250)
 		{
 			aValid = false;
 		}
@@ -185,21 +187,33 @@ void kernel FullRun(global Broker* tBrokerList, global const MarketPrice* tMarke
 			aDecisionPoint += aDVolume.m_Avg6Month*aSimBroker.m_Settings[30];
 			aDecisionPoint += aDVolume.m_Avg1Year*aSimBroker.m_Settings[31];
 			
-			
-			aDecisionPoint += (aDOpen.m_Avg5Day - aDOpen.m_Avg15Day)*aSimBroker.m_Settings[32];
-			aDecisionPoint += (aDOpen.m_Avg15Day - aDOpen.m_Avg30Day)*aSimBroker.m_Settings[33];
-			aDecisionPoint += (aDHigh.m_Avg5Day - aDHigh.m_Avg15Day)*aSimBroker.m_Settings[34];
-			aDecisionPoint += (aDHigh.m_Avg15Day - aDHigh.m_Avg30Day)*aSimBroker.m_Settings[35];
-			aDecisionPoint += (aDLow.m_Avg5Day - aDLow.m_Avg15Day)*aSimBroker.m_Settings[36];
-			aDecisionPoint += (aDLow.m_Avg15Day - aDLow.m_Avg30Day)*aSimBroker.m_Settings[37];
-			aDecisionPoint += (aDClose.m_Avg5Day - aDClose.m_Avg15Day)*aSimBroker.m_Settings[38];
-			aDecisionPoint += (aDClose.m_Avg15Day - aDClose.m_Avg30Day)*aSimBroker.m_Settings[39];
+			aDecisionPoint += (aDOpen.m_Price - aDOpen.m_Avg5Day)*aSimBroker.m_Settings[32];
+			aDecisionPoint += (aDOpen.m_Avg5Day - aDOpen.m_Avg15Day)*aSimBroker.m_Settings[33];
+			aDecisionPoint += (aDOpen.m_Avg15Day - aDOpen.m_Avg30Day)*aSimBroker.m_Settings[34];
+			aDecisionPoint += (aDOpen.m_Avg30Day - aDOpen.m_Avg3Month)*aSimBroker.m_Settings[35];
+			aDecisionPoint += (aDOpen.m_Avg3Month - aDOpen.m_Avg6Month)*aSimBroker.m_Settings[36];
+			aDecisionPoint += (aDOpen.m_Avg6Month - aDOpen.m_Avg1Year)*aSimBroker.m_Settings[37];
 
-			aDecisionPoint += (aDOpen.m_Avg5Day - aDClose.m_Avg5Day)*aSimBroker.m_Settings[40];
-			aDecisionPoint += (aDOpen.m_Avg15Day - aDClose.m_Avg15Day)*aSimBroker.m_Settings[41];
+			aDecisionPoint += (aDClose.m_Price - aDClose.m_Avg5Day)*aSimBroker.m_Settings[38];
+			aDecisionPoint += (aDClose.m_Avg5Day - aDClose.m_Avg15Day)*aSimBroker.m_Settings[39];
+			aDecisionPoint += (aDClose.m_Avg15Day - aDClose.m_Avg30Day)*aSimBroker.m_Settings[40];
+			aDecisionPoint += (aDClose.m_Avg30Day - aDClose.m_Avg3Month)*aSimBroker.m_Settings[41];
+			aDecisionPoint += (aDClose.m_Avg3Month - aDClose.m_Avg6Month)*aSimBroker.m_Settings[42];
+			aDecisionPoint += (aDClose.m_Avg6Month - aDClose.m_Avg1Year)*aSimBroker.m_Settings[43];
 
-			aDecisionPoint += (aDHigh.m_Avg5Day - aDLow.m_Avg5Day)*aSimBroker.m_Settings[42];
-			aDecisionPoint += (aDHigh.m_Avg15Day - aDLow.m_Avg15Day)*aSimBroker.m_Settings[43];
+			aDecisionPoint += (aDHigh.m_Price - aDHigh.m_Avg5Day)*aSimBroker.m_Settings[44];
+			aDecisionPoint += (aDHigh.m_Avg5Day - aDHigh.m_Avg15Day)*aSimBroker.m_Settings[45];
+			aDecisionPoint += (aDHigh.m_Avg15Day - aDHigh.m_Avg30Day)*aSimBroker.m_Settings[46];
+			aDecisionPoint += (aDHigh.m_Avg30Day - aDHigh.m_Avg3Month)*aSimBroker.m_Settings[47];
+			aDecisionPoint += (aDHigh.m_Avg3Month - aDHigh.m_Avg6Month)*aSimBroker.m_Settings[48];
+			aDecisionPoint += (aDHigh.m_Avg6Month - aDHigh.m_Avg1Year)*aSimBroker.m_Settings[49];
+
+			aDecisionPoint += (aDClose.m_Price - aDClose.m_Avg5Day)*aSimBroker.m_Settings[50];
+			aDecisionPoint += (aDClose.m_Avg5Day - aDClose.m_Avg15Day)*aSimBroker.m_Settings[51];
+			aDecisionPoint += (aDClose.m_Avg15Day - aDClose.m_Avg30Day)*aSimBroker.m_Settings[52];
+			aDecisionPoint += (aDClose.m_Avg30Day - aDClose.m_Avg3Month)*aSimBroker.m_Settings[53];
+			aDecisionPoint += (aDClose.m_Avg3Month - aDClose.m_Avg6Month)*aSimBroker.m_Settings[54];
+			aDecisionPoint += (aDClose.m_Avg6Month - aDClose.m_Avg1Year)*aSimBroker.m_Settings[55];
 
 			if (aDecisionPoint > aBuyPoint)
 			{
@@ -223,6 +237,8 @@ void kernel FullRun(global Broker* tBrokerList, global const MarketPrice* tMarke
 				aSimBroker.m_ShareCount++;
 				aSimBroker.m_TotalShareCount++;
 				aSimBroker.m_Budget -= tMarketPriceList[y].m_Close.m_Price;
+				aSimBroker.m_Investment += tMarketPriceList[y].m_Close.m_Price;
+				//aSimBroker.m_TotalInvestment += tMarketPriceList[y].m_Close.m_Price;
 				aOldestStock = y;
 			}
 		}
@@ -231,6 +247,8 @@ void kernel FullRun(global Broker* tBrokerList, global const MarketPrice* tMarke
 
 			if (aSimBroker.m_ShareCount > 0)
 			{
+				aSimBroker.m_Investment -= tMarketPriceList[y].m_Close.m_Price;
+				//aSimBroker.m_TotalInvestment -= tMarketPriceList[y].m_Close.m_Price;
 				aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price;
 				aSimBroker.m_ShareCount--;
 				aOldestStock = y;
@@ -238,26 +256,35 @@ void kernel FullRun(global Broker* tBrokerList, global const MarketPrice* tMarke
 		}
 		if (aSellOld)
 		{
+			aSimBroker.m_Investment = 0;
+			//aSimBroker.m_TotalInvestment -= tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_ShareCount = 0;
 			aOldestStock = y;
 		}
 		if (aSellSplit)
 		{
-			//aSimBroker.m_ShareCount += aSimBroker.m_ShareCount;
+			//aSimBroker.m_TotalInvestment -= tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_Budget += tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_ShareCount = 0;
 			aOldestStock = y;
+			aSimBroker.m_Investment = 0;
 		}
 		if (aSellEnd)
 		{
+			//aSimBroker.m_TotalInvestment += aSimBroker.m_Investment;
+			aSimBroker.m_Investment = 0;
+
 			aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_NetWorth += aSimBroker.m_Budget;
 			aSimBroker.m_Budget = aSimBroker.m_BudgetPerMarket;
 			aSimBroker.m_ShareCount = 0;
 			aOldestStock = y;
 		}
+
+		aSimBroker.m_TotalInvestment += aSimBroker.m_Investment;
 	}
 	
 	tBrokerList[get_global_id(0)] = aSimBroker;
+
 }

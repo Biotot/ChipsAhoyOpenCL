@@ -21,8 +21,12 @@ namespace ChocolateChipsWeb
         public Nullable<int> SellCount { get; set; }
         public Nullable<int> ActionCount { get; set; }
         public Nullable<double> AverageProfitPerShare { get; set; }
-        public Nullable<double> Margin { get; set; }
-        public Nullable<bool> BetterThanMargin { get; set; }
         public Nullable<double> AverageProfit { get; set; }
+        public Nullable<double> AveragePercentReturn { get; set; }
+        public string SortType { get; set; }
+        public Nullable<double> ProfitPerShareDeviation { get; set; }
+        public Nullable<double> PercentReturnDeviation { get; set; }
+        public Nullable<double> High { get; set; }
+        public Nullable<double> Low { get; set; }
     }
 }

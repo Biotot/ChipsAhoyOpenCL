@@ -39,14 +39,30 @@ std::vector<std::string> BrokerLoader::LoadSavedBrokers(std::string tFileName)
 	return aBrokerList;
 }
 
+Broker BrokerLoader::CreateDefaultBroker()
+{
+	Broker aRetBroker;
+
+	aRetBroker.m_Budget = 0;
+	aRetBroker.m_BudgetPerMarket = 1000000;
+	aRetBroker.m_ProfitPerShare = 0;
+	aRetBroker.m_NetWorth = 0;
+	aRetBroker.m_TotalProfit = 0;
+	aRetBroker.m_BrokerScore = 0;
+	aRetBroker.m_SettingsCount = 56;
+	aRetBroker.m_TotalShareCount = 0;
+	aRetBroker.m_TotalInvestment = 0;
+
+	return aRetBroker;
+}
+
 Broker BrokerLoader::ParseXML(std::string tFileName)
 {
 	ptree aBrokerTree;
 	std::ifstream aFileStream("Broker\\"+tFileName);
 	read_xml(aFileStream, aBrokerTree);
 	Broker aBroker;
-	// traverse pt
-	std::vector<Broker> ans;
+	bool aFailure = false;
 	BOOST_FOREACH(ptree::value_type const& aValue, aBrokerTree.get_child("Broker")) 
 	{
 		
@@ -54,23 +70,37 @@ Broker BrokerLoader::ParseXML(std::string tFileName)
 		//aBroker.m_BrokerGuid = aValue.second.get<int>("BrokerGUID");
 		if (aValue.first == "Details") 
 		{
+			///aBroker.m_AlgorithmID = aValue.second.get<int>("AlgorithmID");
+			aBroker = CreateDefaultBroker();
+			int aSettingCount = 0;
 			aBroker.m_BrokerGuid = aValue.second.get<int>("BrokerGUID");
 			aBroker.m_AlgorithmID = aValue.second.get<int>("AlgorithmID");
-			///aBroker.m_AlgorithmID = aValue.second.get<int>("AlgorithmID");
-
-			aBroker.m_Budget = 0;
-			aBroker.m_BudgetPerMarket = 1000000;
-			aBroker.m_ProfitPerShare = 0;
-			aBroker.m_NetWorth = 0;
-			aBroker.m_TotalProfit = 0;
-			aBroker.m_BrokerScore = 0;
-			aBroker.m_SettingsCount = 51;
-			aBroker.m_TotalShareCount = 0;
-			int aSettingCount = 0;
 			ptree aSettingsNode = aValue.second.get_child("Settings");
-			for (int x=0; x<50; x++)
+			for (int x=0; x<aBroker.m_SettingsCount; x++)
 			{
-				aBroker.m_Settings[x] = aSettingsNode.get<double>("Setting" + std::to_string(x));
+				try
+				{
+					string aSettingString = aSettingsNode.get<string>("Setting" + std::to_string(x));
+
+					int aVal = -10;
+					aVal = atof(aSettingString.c_str());
+					if (aVal != INT_MAX)
+					{
+						aBroker.m_Settings[x] = aVal;// aSettingsNode.get<double>("Setting" + std::to_string(x));
+					}
+					else
+					{
+						aFailure = true;
+						cout << aBroker.m_BrokerGuid << " HAS A BAD FILE : SETTINGS"<<x << endl;
+						aBroker.m_BrokerGuid = 0;
+					}
+				}
+				catch (int e)
+				{
+					aFailure = true;
+					cout << aBroker.m_BrokerGuid << " HAS A BAD FILE" << endl;
+					aBroker.m_BrokerGuid = 0;
+				}
 			}
 		}
 	}

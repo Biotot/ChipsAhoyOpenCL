@@ -10,11 +10,12 @@ using boost::property_tree::xml_writer_settings;
 
 void UpdateBrokers(int tPlatform, int tDevice)
 {
-	BrokerLoader aLoader;
 	SimControl aHost;
 	int aSimDepth = 1;
 	aHost.SetMarketList(aSimDepth, tPlatform, tDevice, 1);
 
+
+	vector<std::string> aBrokerFileList;
 	DIR *dir;
 	struct dirent *ent;
 
@@ -29,10 +30,8 @@ void UpdateBrokers(int tPlatform, int tDevice)
 			int aIndex = aFileName.find(".xml");
 			if (aIndex > 0)
 			{
-				aHost.m_BestBroker = aLoader.ParseXML(aFileName);
+				aBrokerFileList.push_back(aFileName);
 				aFileCount++;
-				//cout << aHost.m_BestBroker.m_BrokerGuid + " RUNNING " << endl;
-				aHost.Run(aSimDepth, 1);
 			}
 		}
 		closedir(dir);
@@ -40,8 +39,10 @@ void UpdateBrokers(int tPlatform, int tDevice)
 	else {
 		/* could not open directory */
 		perror("");
-		return;
 	}
+
+
+	aHost.UpdateBrokers(aBrokerFileList, 10);
 }
 
 void BruteBrokers(int tPlatform, int tDevice, int tBrokerCount)
@@ -60,26 +61,27 @@ void BruteBrokers(int tPlatform, int tDevice, int tBrokerCount)
 		cin >> tBrokerCount;
 	}
 
+
 	
 
 
 	srand(time(NULL));
 	while (true)
 	{
-		//for (int x = 5; x >1; x--)
-		for (int x = 2; x <5; x++)
+		//for (int x = 10; x>2; x--)
+		for (int x = 3; x <10; x++)
 		{
 			if (tBrokerCount > 5)
 			{
 				aHost.SetDefaultBroker();
 				aHost.SetMarketList(x, tPlatform, tDevice, tBrokerCount);
-				aHost.Run(x, tBrokerCount);
+				aHost.RunBrute(x, tBrokerCount);
 			}
 			else
 			{
 				aHost.SetDefaultBroker();
 				aHost.SetMarketList(x, tPlatform, tDevice, aBrokerCount[tBrokerCount]);
-				aHost.Run(x, aBrokerCount[tBrokerCount]);
+				aHost.RunBrute(x, aBrokerCount[tBrokerCount]);
 			}
 		}
 	}
@@ -160,22 +162,16 @@ SimControl::~SimControl()
 
 void SimControl::SetDefaultBroker()
 {
-	double aBestList[] = { -22.688600,	-74.854800,	-90.234800,	336.930200,	-439.737200,	-499.700000,	145.229600,	-490.503200,	54.278400,	351.530600,	-253.556400,	316.203200,	100.638400,	267.888800,	-271.065000,	11.467800,	-0.816200,	448.896400,	-208.513800,	-19.728600,	-251.636200,	-117.589000,	-190.517600,	120.604200,	-174.972400,	385.215600,	-375.954400,	168.776400,	-495.727200,	494.867200,	-210.970200,	-218.082000,	475.991200,	-198.840600,	-457.002000,	-473.665600,	-498.118400,	234.666600,	51.428400,	-320.715000,	182.062600,	65.921400,	-499.764400,	-500.000000,	-303.226800,	-2.121800,	-478.662400,	-355.311200,	-494.456800,	218.082000 };
+	//double aBestList[] = { -22.688600,	-74.854800,	-90.234800,	336.930200,	-439.737200,	-499.700000,	145.229600,	-490.503200,	54.278400,	351.530600,	-253.556400,	316.203200,	100.638400,	267.888800,	-271.065000,	11.467800,	-0.816200,	448.896400,	-208.513800,	-19.728600,	-251.636200,	-117.589000,	-190.517600,	120.604200,	-174.972400,	385.215600,	-375.954400,	168.776400,	-495.727200,	494.867200,	-210.970200,	-218.082000,	475.991200,	-198.840600,	-457.002000,	-473.665600,	-498.118400,	234.666600,	51.428400,	-320.715000,	182.062600,	65.921400,	-499.764400,	-500.000000,	-303.226800,	-2.121800,	-478.662400,	-355.311200,	-494.456800,	218.082000 };
 	bool aSeededSetting = false;
 
-	m_BestBroker.m_Budget = 0;
-	m_BestBroker.m_BudgetPerMarket = 1000000;
-	m_BestBroker.m_ProfitPerShare = 0;
-	m_BestBroker.m_NetWorth = 0;
-	m_BestBroker.m_BrokerScore = 0;
-	m_BestBroker.m_SettingsCount = 51;
-	m_BestBroker.m_TotalShareCount = 0;
+	m_BestBroker = BrokerLoader::CreateDefaultBroker();
 	m_BestBroker.m_BrokerGuid = rand()*rand();
 	for (int y = 0; y < m_BestBroker.m_SettingsCount; y++)
 	{
 		if (aSeededSetting)
 		{
-			m_BestBroker.m_Settings[y] = aBestList[y];
+			//m_BestBroker.m_Settings[y] = aBestList[y];
 		}
 		else
 		{
@@ -186,10 +182,33 @@ void SimControl::SetDefaultBroker()
 
 void SimControl::SetMarketList(int tSimDepth, int tPlatform, int tDevice, int tBrokerCount)
 {
-	vector<string> aMarketStringList = { "GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "WFC", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA", "NFLX", "TWTR", "MSFT", "GPRO", "BABA", "SIRI", "CHK", "CSCO", "C", "ZNGA", "VZ", "MYL", "CXW" , "^IXIC", "^GSPC", "^DJI"};
+	vector<string> aMarketStringList;
+
+	aMarketStringList = { "GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA", "NFLX", "TWTR", "MSFT", "GPRO", "BABA", "ZNGA", "VZ", "MYL", "CXW" , "^IXIC", "^GSPC", "^DJI",
+	"PG", "CHK", "DB" , "COTY" , "WFC" , "CTSH" , "SIRI" , "QCOM" , "WLL" , "CSCO" , "FCX" , "KR" , "DO" , "C" , "QQQ" , "NXPI" , "ECA" , "WFT" , "AA" , "NVFY" , "XNY" , "CNET" , "PYDS" , "PTCT" , "ITUS" , "MXC" ,
+		"LEJU" , "JTPY" , "TWER" , "AUPH" , "LXK" , "EBS", "DRNA", "WAC", "GBT", "EVI", "COOL", "BVX", "COLL", "IDRA", "PGNX", "SGM", "SPY", "EEM", "EWJ", "XLF", "GDX", "UVXY", "USO", "VXX", "IWM", "EFA",  "NUGT",
+	"UWTI", "EWZ", "XIV", "XOP", "XLP", "DGAZ", "JNUG", "GDXJ", "XLU", "XLE", "HYG", "TLT", "SLV", "XLI", "JNK", "TVIX", "IYR", "RSX", "XLK"};
 
 	//vector<string> aMarketStringList = { "GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "WFC", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA"};
-	//vector<string> aMarketStringList = { "GE" }; 
+	//aMarketStringList = { "GE" }; 
+	for (int x = 0; x < aMarketStringList.size(); x++)
+	{
+		for (int y = 0; y < x; y++)
+		{
+			if (aMarketStringList[x] == aMarketStringList[y])
+			{
+				cout << aMarketStringList[x] << " DUPLICATED" << endl;
+				/*auto it = std::find(aMarketStringList.begin(), aMarketStringList.end(), y);
+				if (it != aMarketStringList.end())
+				{
+					aMarketStringList.erase(it);
+					x--;
+				}*/
+			}
+
+		}
+	}
+
 
 	
 	m_MarketCount = aMarketStringList.size();
@@ -197,7 +216,7 @@ void SimControl::SetMarketList(int tSimDepth, int tPlatform, int tDevice, int tB
 	m_TotalPriceCount = 0;
 	for (int x = 0; x < m_MarketCount; x++)
 	{
-		MarketLoader aLoader(aMarketStringList[x], 1980, (tSimDepth * 3 * ONEYEAR) + ONEYEAR);
+		MarketLoader aLoader(aMarketStringList[x], 1980, (tSimDepth * ONEYEAR) + ONEYEAR);
 		m_MarketList[x] = aLoader.m_Market;
 		m_TotalPriceCount += aLoader.m_Market.m_MarketPriceCount;
 	}
@@ -206,7 +225,7 @@ void SimControl::SetMarketList(int tSimDepth, int tPlatform, int tDevice, int tB
 	m_Loader.LoadMarkets(m_MarketList, m_MarketCount, tBrokerCount);
 }
 
-void SimControl::Run(int tSimDepth, int tBrokerCount)
+void SimControl::RunBrute(int tSimDepth, int tBrokerCount)
 {
 
 	int aBrokerCount = tBrokerCount;
@@ -214,177 +233,336 @@ void SimControl::Run(int tSimDepth, int tBrokerCount)
 	cout << "Running with: " << m_TotalPriceCount << " price points" << endl;
 
 	m_BestBroker.m_MarketCount = m_MarketCount;
-	//aOpenCLCaller.DisplayBestBroker(m_BestBroker, aMarketList[0]);
-	vector<Broker> aBestofTheBest;
-	aBestofTheBest.insert(aBestofTheBest.begin(), m_BestBroker);
 	std::cout << fixed;
 
-	//int aMilliseconds = time(NULL);
-	int aIdleLoopCount = 0;
-	int aTotalSimCount = 0;
-	double aMaxTarget = 1000000;
-	if (tBrokerCount == 1)
-	{
-		aMaxTarget = 1;
-	}
 
-	/*for (int x = 0; x < m_MarketList[0].m_MarketPriceCount; x++)
-	{
-		std::cout << m_MarketList[0].PriceList[x].m_Close.m_Price<<" : " << string(m_MarketList[0].PriceList[x].m_Timestamp) << endl;
-	}*/
+	int aAlphaCount = 100;
+	Broker* aSeedHerd = new Broker[aAlphaCount];
+	ReworkBrokerList(aSeedHerd, &m_BestBroker, aAlphaCount, m_MarketCount, 500);
 
-#pragma region MAINLOOP
-	Log("~~~~~~~~~STARTING NEW RUN~~~~~~~~~~~~~~~" + to_string(tSimDepth), true, "Log");
-	for (int y = 0; (y < 20) && (aIdleLoopCount < 1); y++)
+	vector<Broker> aBrokerHerd;
+	aBrokerHerd.insert(aBrokerHerd.begin(), aSeedHerd, aSeedHerd + aAlphaCount);
+	double aMaxTarget = 10000000;
+
+	int aRange = 500;
+	int aInnnerSimCount = 55;
+	for (int x = 0; (x < aMaxTarget);)
 	{
-		printf("\nRunning with %i Brokers\n", aBrokerCount);
-		aIdleLoopCount++;
-		int aRange = 200;
-		for (int x = 0; (x < aMaxTarget); x += aBrokerCount)
+		aRange = floor(500 * ((aMaxTarget - x) / aMaxTarget));
+		Broker aTempBroker = m_BestBroker;
+		aBrokerHerd = NaturalSelection(aBrokerHerd, tBrokerCount, aRange, "RAND", aInnnerSimCount);
+		m_BestBroker = aBrokerHerd[0];
+		x += aBrokerCount*aInnnerSimCount;
+		if ((m_BestBroker.m_TotalProfit != aTempBroker.m_TotalProfit) || (m_BestBroker.m_ProfitPerShare != aTempBroker.m_ProfitPerShare) || (m_BestBroker.m_PercentReturn != aTempBroker.m_PercentReturn))
 		{
-			aRange = floor(200 * ((aMaxTarget - x) / aMaxTarget));
-			clock_t aStartLoop = clock();
-			Broker* aBrokerList = new Broker[aBrokerCount];
-			ReworkBrokerList(aBrokerList, &m_BestBroker, aBrokerCount, m_MarketCount, aRange);
-			m_Loader.RunBrokers(aBrokerList, aBrokerCount);
-			aTotalSimCount += aBrokerCount;
-			Broker aTempBroker;// = m_BestBroker;
-
-			aTempBroker = CalcDeviations(aBrokerList, aBrokerCount);
-
-			//x = (x / 2);
-			//x = x-(x % 50000);
-			if (m_BestBroker.m_BrokerGuid != aTempBroker.m_BrokerGuid)
-			{
-				aBestofTheBest.insert(aBestofTheBest.begin(), aTempBroker);
-				aTempBroker = CalcDeviations(aBestofTheBest.data(), aBestofTheBest.size());
-
-				if (m_BestBroker.m_BrokerGuid != aTempBroker.m_BrokerGuid)
-				{
-					m_BestBroker = aTempBroker;
-					LogBroker(m_BestBroker, " ", true);
-					aIdleLoopCount = 0;
-
-					x = (x * 0.5);
-					x = x - (x % 50000);
-				}
-				else
-				{
-					aBestofTheBest.erase(aBestofTheBest.begin());
-				}
-
-			}
-			else if (aBrokerCount == 1)
-			{
-				m_BestBroker = aTempBroker;
-			}
-
-			if ((x % 50000) == 0)
-			{
-				printf("%iK", x / 1000);
-			}
-			else
-			{
-				printf(".");
-			}
-			
-			clock_t aEndLoop = clock() - aStartLoop;
-			delete aBrokerList;
+			aMaxTarget += aBrokerCount*aInnnerSimCount;//Skip a sim chunk
 		}
 
+		LogBroker(m_BestBroker, " ", true);
+		aBrokerHerd = NaturalSelection(aBrokerHerd, tBrokerCount, aRange, "TARG", aInnnerSimCount);
+		m_BestBroker = aBrokerHerd[0];
+		x += aBrokerCount*aInnnerSimCount;
 
-		if (tBrokerCount != 1)
+		if ((m_BestBroker.m_TotalProfit != aTempBroker.m_TotalProfit) || (m_BestBroker.m_ProfitPerShare != aTempBroker.m_ProfitPerShare) || (m_BestBroker.m_PercentReturn != aTempBroker.m_PercentReturn))
 		{
-			aRange = 500;
-			printf("\nRefining Results");
-			int aSettingNum = 0;
-			bool aLooping = true;
-			while (aLooping)
-			{
-				aLooping = false;
-				for (int x = 0; (x < m_BestBroker.m_SettingsCount); x++)
-				{
-					clock_t aStartLoop = clock();
-					Broker* aBrokerList = new Broker[aBrokerCount];
-					Broker aBestofTheBestofTheBest = m_BestBroker;
-					RefineBrokerList(aBrokerList, &m_BestBroker, aBrokerCount, m_MarketCount, aRange, x);
-					m_Loader.RunBrokers(aBrokerList, aBrokerCount);
-					aTotalSimCount += aBrokerCount;
-
-					bool aNewBest = false;
-					Broker aTempBroker = CalcDeviations(aBrokerList, aBrokerCount);
-					if (aTempBroker.m_BrokerGuid != m_BestBroker.m_BrokerGuid)// aBestofTheBestofTheBest.m_BrokerNum)
-					{
-						aBestofTheBest.insert(aBestofTheBest.begin(), aTempBroker);
-						Broker aTempBroker = CalcDeviations(aBestofTheBest.data(), aBestofTheBest.size());
-
-						if (m_BestBroker.m_BrokerGuid != aTempBroker.m_BrokerGuid)
-						{
-							m_BestBroker = aTempBroker;
-							aNewBest = true;
-							LogBroker(m_BestBroker, "", true);
-							aIdleLoopCount = 0;
-							aLooping = true;
-						}
-					}
-
-					if (!aNewBest)
-					{
-						if ((x % 10) == 0)
-						{
-							printf("%i", x);
-						}
-						else
-						{
-							printf(".");
-						}
-					}
-					clock_t aEndLoop = clock() - aStartLoop;
-					delete aBrokerList;
-					aSettingNum++;
-				}
-			}
+			aMaxTarget += aBrokerCount*aInnnerSimCount;//Skip a sim chunk
 		}
-
-		LogBroker(m_BestBroker, "BEST OF RUN:" + to_string(y), false);
+		LogBroker(m_BestBroker, " [" + to_string(x) + " |/| " + to_string(aMaxTarget) + "]", true);
 	}
-	 
-	printf("\nCOMPLETED AFTER %i SIMULATIONS", aTotalSimCount);
+	
+
+	delete aSeedHerd;
+	printf("\nCOMPLETED AFTER SOME SIMULATIONS");
 	string aOutput = LogBroker(m_BestBroker, " BEST OF THE BEST", true);
 	Log(aOutput, true, "Best");
+
+
+	PrintBroker("Broker\\", m_BestBroker, to_string(tSimDepth));
+
+
+
+//
+//#pragma region MAINLOOP
+//	Log("~~~~~~~~~STARTING NEW RUN~~~~~~~~~~~~~~~" + to_string(tSimDepth), true, "Log");
+//	for (int y = 0; (y < 20) && (aIdleLoopCount < 1); y++)
+//	{
+//		printf("\nRunning with %i Brokers\n", aBrokerCount);
+//		aIdleLoopCount++;
+//		int aRange = 200;
+//		for (int x = 0; (x < aMaxTarget); x += aBrokerCount)
+//		{
+//			aRange = floor(200 * ((aMaxTarget - x) / aMaxTarget));
+//			clock_t aStartLoop = clock();
+//			Broker* aBrokerList = new Broker[aBrokerCount];
+//			ReworkBrokerList(aBrokerList, &m_BestBroker, aBrokerCount, m_MarketCount, aRange);
+//			m_Loader.RunBrokers(aBrokerList, aBrokerCount);
+//			aTotalSimCount += aBrokerCount;
+//			Broker aTempBroker;// = m_BestBroker;
+//
+//			aTempBroker = CalcDeviations(aBrokerList, aBrokerCount);
+//			if (m_BestBroker.m_BrokerGuid != aTempBroker.m_BrokerGuid)
+//			{
+//				aBestofTheBest.insert(aBestofTheBest.begin(), aTempBroker);
+//				aTempBroker = CalcDeviations(aBestofTheBest.data(), aBestofTheBest.size());
+//				if (aBestofTheBest.size() > 50)
+//				{
+//					std::sort(aBestofTheBest.begin(), aBestofTheBest.end(), [](Broker const& a, Broker const& b) { return a.m_BrokerScore > b.m_BrokerScore; });
+//					aBestofTheBest.pop_back();
+//				}
+//
+//				if (m_BestBroker.m_BrokerGuid != aTempBroker.m_BrokerGuid)
+//				{
+//					m_BestBroker = aTempBroker;
+//					LogBroker(m_BestBroker, " ", true);
+//					printf("%i: ", aBestofTheBest.size());
+//
+//					x = (x * 0.75);
+//					aIdleLoopCount = 0;
+//					x = x - (x % 50000);
+//				}
+//				else
+//				{
+//					aBestofTheBest.erase(aBestofTheBest.begin());
+//				}
+//			}
+//			else if (aBrokerCount == 1)
+//			{
+//				m_BestBroker = aTempBroker;
+//			}
+//
+//			if ((x % 50000) == 0)
+//			{
+//				printf("%iK", x / 1000);
+//			}
+//			else
+//			{
+//				printf(".");
+//			}
+//			
+//			clock_t aEndLoop = clock() - aStartLoop;
+//			delete aBrokerList;
+//		}
+//
+//
+//		if (tBrokerCount != 1)
+//		{
+//			aRange = 500;
+//			printf("\nRefining Results");
+//			int aSettingNum = 0;
+//			int aLoopCount = 0;
+//			bool aLooping = true;
+//			for (aLoopCount = 0; aLooping&&(aLoopCount<5); aLoopCount++)
+//			{
+//				aLooping = false;
+//				for (int x = 0; (x < m_BestBroker.m_SettingsCount); x++)
+//				{
+//					clock_t aStartLoop = clock();
+//					Broker* aBrokerList = new Broker[aBrokerCount];
+//					Broker aBestofTheBestofTheBest = m_BestBroker;
+//					RefineBrokerList(aBrokerList, &m_BestBroker, aBrokerCount, m_MarketCount, aRange, x);
+//					m_Loader.RunBrokers(aBrokerList, aBrokerCount);
+//					aTotalSimCount += aBrokerCount;
+//
+//					bool aNewBest = false;
+//					Broker aTempBroker;
+//					aTempBroker = CalcDeviations(aBrokerList, aBrokerCount);
+//					if (aTempBroker.m_BrokerGuid != m_BestBroker.m_BrokerGuid)// aBestofTheBestofTheBest.m_BrokerNum)
+//					{
+//						aBestofTheBest.insert(aBestofTheBest.begin(), aTempBroker);
+//						aTempBroker = CalcDeviations(aBestofTheBest.data(), aBestofTheBest.size());
+//						if (aBestofTheBest.size() > 50)
+//						{
+//							std::sort(aBestofTheBest.begin(), aBestofTheBest.end(), [](Broker const& a, Broker const& b) { return a.m_BrokerScore > b.m_BrokerScore; });
+//							aBestofTheBest.pop_back();
+//						}
+//
+//						if (m_BestBroker.m_BrokerGuid != aTempBroker.m_BrokerGuid)
+//						{
+//							m_BestBroker = aTempBroker;
+//							aNewBest = true;
+//							LogBroker(m_BestBroker, "", true);
+//							printf("%i-%i-%i", x, aLoopCount, aBestofTheBest.size());
+//							aIdleLoopCount = 0;
+//							aLooping = true;
+//
+//
+//						}
+//					}
+//					else
+//					{
+//						aBestofTheBest.erase(aBestofTheBest.begin());
+//					}
+//
+//					//if (!aNewBest)
+//					{
+//						if ((x % 10) == 0)
+//						{
+//							printf(" [%i]", x);
+//						}
+//						else
+//						{
+//							printf(".");
+//						}
+//					}
+//					clock_t aEndLoop = clock() - aStartLoop;
+//					delete aBrokerList;
+//					aSettingNum++;
+//				}
+//			}
+//		}
+//		aBestofTheBest.clear();
+//		aBestofTheBest.insert(aBestofTheBest.begin(), m_BestBroker);
+//		LogBroker(m_BestBroker, "BEST OF RUN:" + to_string(y), false);
+//	}
+//	 
+#pragma endregion
+	 
+}
+
+vector<Broker> SimControl::NaturalSelection(vector<Broker> &tBrokerHerd, int tBrokerCount, int tRange, string tMutateType, int tMaxLoopCount)
+{
+	if (tBrokerCount % tBrokerHerd.size() != 0)
+	{
+		cout << "Shit";
+	}
+	cout << tMutateType<< " at range : " << tRange << endl;
+	int aChildCount = tBrokerCount / tBrokerHerd.size();
+	int aTopCount = 10000;
+	vector<Broker> aFullList = tBrokerHerd;
+	for (int aGeneration = 0; aGeneration < tMaxLoopCount; aGeneration++)
+	{
+		vector<Broker> aBrokerList;
+		for (int x = 0; x < tBrokerHerd.size(); x++)
+		{
+			Broker* aTempBrokerList = new Broker[aChildCount];
+
+			if (tMutateType == "RAND")
+			{
+				ReworkBrokerList(aTempBrokerList, &(tBrokerHerd)[x], aChildCount, m_MarketCount, tRange);
+			}
+			else if (tMutateType == "TARG")
+			{
+				RefineBrokerList(aTempBrokerList, &(tBrokerHerd)[x], aChildCount, m_MarketCount, tRange, aGeneration);
+			}
+			aBrokerList.insert(aBrokerList.begin(), aTempBrokerList, aTempBrokerList + aChildCount);
+
+
+			delete aTempBrokerList;
+		}
+		if (aBrokerList.size() != tBrokerCount)
+		{
+			cout << "fuck";
+		}
+		m_Loader.RunBrokers(aBrokerList.data(), tBrokerCount);
+		//CalcDeviations(aBrokerList.data(), aBrokerList.size());
+		//std::sort(aBrokerList.begin(), aBrokerList.end(), [](Broker const& a, Broker const& b) { return a.m_BrokerScore > b.m_BrokerScore; });
+
+		aFullList.insert(aFullList.begin(), aBrokerList.begin(), aBrokerList.end());
+		CalcDeviations(aFullList.data(), aFullList.size());
+		std::sort(aFullList.begin(), aFullList.end(), [](Broker const& a, Broker const& b) { return a.m_BrokerScore > b.m_BrokerScore; });
+
+		if (aFullList.size() > aTopCount)
+		{
+			aFullList.erase(aFullList.begin() + aTopCount, aFullList.end());
+		}
+
+		if (aGeneration % 10 == 0)
+		{
+			if ((m_BestBroker.m_TotalProfit != aFullList[0].m_TotalProfit) || (m_BestBroker.m_ProfitPerShare != aFullList[0].m_ProfitPerShare) || (m_BestBroker.m_PercentReturn != aFullList[0].m_PercentReturn))
+			{
+				m_BestBroker = aFullList[0];
+				LogBroker(m_BestBroker, " @ " + to_string(m_BestBroker.m_BrokerScore), true);
+			}
+		}
+
+		for (int x = 0; x < tBrokerHerd.size(); x++)
+		{
+			tBrokerHerd[x] = aFullList[x];
+		}
+		cout << "."; 
+		
+		//cout << "X" << endl;
+	}
+	return tBrokerHerd;
+}
+
+void SimControl::UpdateBrokers(vector<std::string> tBrokerFileList, int tConcurentBrokers)
+{
+	BrokerLoader aLoader;
+	int aBrokerCount = tBrokerFileList.size();
+
+	cout << "Running with: " << m_TotalPriceCount << " price points" << endl;
+
+	m_BestBroker.m_MarketCount = m_MarketCount;
+	std::cout << fixed;
+
+	Broker* aBrokerList = new Broker[aBrokerCount];
+
+	for (int x = 0; x < tBrokerFileList.size(); x++)
+	{
+		cout << tBrokerFileList[x] << endl;
+		aBrokerList[x] = aLoader.ParseXML(tBrokerFileList[x]);
+	}
+
+	m_Loader.RunBrokers(aBrokerList, aBrokerCount);
+	CalcDeviations(aBrokerList, aBrokerCount);
+
+	for (int x = 0; x < tBrokerFileList.size(); x++)
+	{
+		cout << tBrokerFileList[x] << endl;
+		if (aBrokerList[x].m_BrokerGuid != 0)
+		{
+			PrintBroker("Broker\\Saved\\", aBrokerList[x], "UPDATE");
+		}
+		else
+		{
+			cout << aBrokerList[x].m_BrokerGuid << " HAS A BAD FILE"<< endl;
+		}
+	}
+
+	delete aBrokerList;
+}
+
+
+void SimControl::PrintBroker(std::string tFilePath, Broker tPrintBroker,string tSuffix)
+{
+	string aOutput = LogBroker(tPrintBroker, " BEST OF THE BEST", true);
+	//Log(aOutput, true, "Best");
 
 	ptree aBrokerXML;
 
 	ptree aSettingsNode;
-	aSettingsNode = BrokerSettingsToNode(m_BestBroker);
-	//aSimBroker.m_NetWorth = 0;
-	Broker aTempBroker;// = m_BestBroker;
-	//THIS NETWORTH IS SAVED FROM THE SIM
-	double aProfit = m_BestBroker.m_NetWorth - (m_BestBroker.m_BudgetPerMarket*m_MarketCount);
+	aSettingsNode = BrokerSettingsToNode(tPrintBroker);
+
+	double aProfit = tPrintBroker.m_NetWorth - (tPrintBroker.m_BudgetPerMarket*m_MarketCount);
 	ptree aBrokerDetails;
-	aBrokerDetails.add("AlgorithmID", m_BestBroker.m_AlgorithmID);
-	aBrokerDetails.add("BrokerGUID", m_BestBroker.m_BrokerGuid);
+	aBrokerDetails.add("AlgorithmID", tPrintBroker.m_AlgorithmID);
+	aBrokerDetails.add("BrokerGUID", tPrintBroker.m_BrokerGuid);
 	aBrokerDetails.add("TotalProfit", aProfit);
-	aBrokerDetails.add("ShareCount", m_BestBroker.m_TotalShareCount);
-	aBrokerDetails.add("ProfitPerShare", aProfit / m_BestBroker.m_TotalShareCount);
+	aBrokerDetails.add("ShareCount", tPrintBroker.m_TotalShareCount);
+	aBrokerDetails.add("ProfitPerShare", aProfit / tPrintBroker.m_TotalShareCount);
+	aBrokerDetails.add("PercentReturn", tPrintBroker.m_PercentReturn);
 
 	aBrokerDetails.add_child("Settings", aSettingsNode);
 	aBrokerXML.add_child("Broker.Details", aBrokerDetails);
 
-	for (int x=0; x<m_MarketCount; x++)
+	for (int x = 0; x<m_MarketCount; x++)
 	{
-		aTempBroker = m_BestBroker;
 		//aTempBroker.m_TotalShareCount = 0;
 		MarketPrice* aMarketPriceDifference = new MarketPrice[m_MarketList[x].m_MarketPriceCount];
 		m_Loader.CalcMarketDifferences(m_MarketList[x].PriceList, aMarketPriceDifference, &m_MarketList[x].m_MarketPriceCount);
-		ptree aMarketDisplay = m_Loader.DisplayBestBroker(&aTempBroker, m_MarketList[x], aMarketPriceDifference);
+		tPrintBroker.m_TotalInvestment = 0;
+		ptree aMarketDisplay = m_Loader.DisplayBestBroker(&tPrintBroker, m_MarketList[x], aMarketPriceDifference, true); //defaulting to true. Feature to return to later
 		aBrokerXML.add_child("Broker.MarketResult", aMarketDisplay);/*
-		aProfit += (aTempBroker.m_NetWorth - (aTempBroker.m_BudgetPerMarket));
-		aTotalShareCount += aTempBroker.m_TotalShareCount;*/
+																	aProfit += (aTempBroker.m_NetWorth - (aTempBroker.m_BudgetPerMarket));
+																	aTotalShareCount += aTempBroker.m_TotalShareCount;*/
 		delete aMarketPriceDifference;
 	}
 	
-	string aSaveFile = to_string(m_BestBroker.m_BrokerGuid) + "__" + to_string(tSimDepth) + ".xml";
+	string aSaveFile = to_string(tPrintBroker.m_BrokerGuid) + "__" + tSuffix + ".xml";
+	write_xml(tFilePath+aSaveFile, aBrokerXML);
+
+	/*
 	if (tBrokerCount == 1)
 	{
 		write_xml("Broker\\Saved\\" + aSaveFile, aBrokerXML);
@@ -392,24 +570,8 @@ void SimControl::Run(int tSimDepth, int tBrokerCount)
 	else
 	{
 		write_xml("Broker\\" + aSaveFile, aBrokerXML);
-	}
-	//delete aMarketList;
-	//system("PAUSE");
-
-	aBestofTheBest.clear();
-
-#pragma endregion
-	 
+	}*/
 }
-
-
-
-void UpdateBrokers(vector<std::string> tBrokerFileList, int tConcurentBrokers)
-{
-
-}
-
-
 
 void SimControl::ReworkBrokerList(Broker* tBrokerList, Broker *tBestBroker, int tBrokerCount, int tMarketCount, double tRange)
 {
@@ -418,16 +580,9 @@ void SimControl::ReworkBrokerList(Broker* tBrokerList, Broker *tBestBroker, int 
 	double aMaxRange = 500;
 	for (int x = 0; x < tBrokerCount; x++)
 	{
+
+		tBrokerList[x] = BrokerLoader::CreateDefaultBroker();
 		tBrokerList[x].m_MarketCount = tMarketCount;
-		tBrokerList[x].m_Budget = 0;
-		tBrokerList[x].m_BudgetPerMarket = 1000000;
-		tBrokerList[x].m_ProfitPerShare = 0;
-		tBrokerList[x].m_NetWorth = 0;
-		tBrokerList[x].m_BrokerScore = 0;
-		tBrokerList[x].m_SettingsCount = tBrokerList[0].m_SettingsCount;
-		tBrokerList[x].m_TotalShareCount = 0;
-		tBrokerList[x].m_TotalProfit = 0;
-		tBrokerList[x].m_ShareCount = 0;
 		if (x > 0)
 		{
 			tBrokerList[x].m_BrokerGuid = rand()*rand();
@@ -451,16 +606,8 @@ void SimControl::RefineBrokerList(Broker* tBrokerList, Broker *tBestBroker, int 
 	double aMaxRange = 500;
 	for (int x = 0; x < tBrokerCount; x++)
 	{
+		tBrokerList[x] = BrokerLoader::CreateDefaultBroker();
 		tBrokerList[x].m_MarketCount = tMarketCount;
-		tBrokerList[x].m_Budget = 0;
-		tBrokerList[x].m_BudgetPerMarket = 1000000;
-		tBrokerList[x].m_ProfitPerShare = 0;
-		tBrokerList[x].m_NetWorth = 0;
-		tBrokerList[x].m_BrokerScore = 0;
-		tBrokerList[x].m_SettingsCount = tBrokerList[0].m_SettingsCount;
-		tBrokerList[x].m_TotalShareCount = 0;
-		tBrokerList[x].m_TotalProfit = 0;
-		tBrokerList[x].m_ShareCount = 0;
 		if (x > 0)
 		{
 			tBrokerList[x].m_BrokerGuid = rand()*rand();
@@ -483,72 +630,112 @@ void SimControl::RefineBrokerList(Broker* tBrokerList, Broker *tBestBroker, int 
 		}
 	}
 }
-
-Broker SimControl::CalcDeviations(vector<Broker> tBrokerList, int tBrokerCount)
-{
-	Broker* aBrokerList = new Broker[tBrokerCount];
-	for (int x = 0; x < tBrokerCount; x++)
-	{
-		aBrokerList[x] = tBrokerList[x];
-	}
-	Broker aBest = CalcDeviations(aBrokerList, tBrokerCount);
-	delete aBrokerList;
-	return aBest;
-}
+//
+//Broker SimControl::CalcDeviations(vector<Broker> tBrokerList, int tBrokerCount)
+//{
+//	Broker* aBrokerList = new Broker[tBrokerCount];
+//	for (int x = 0; x < tBrokerCount; x++)
+//	{
+//		aBrokerList[x] = tBrokerList[x];
+//	}
+//	Broker aBest = CalcDeviations(aBrokerList, tBrokerCount);
+//	delete aBrokerList;
+//	return aBest;
+//}
 
 Broker SimControl::CalcDeviations(Broker* tBrokerList, int tBrokerCount)
 {
 	double aProfitPerShareMean = 0;
 	double aTotalProfithMean = 0;
+	double aPercentReturnMean = 0;
 	for (int x = 0; x < tBrokerCount; x++)
 	{
 		Broker aTestBroker = tBrokerList[x];
 		tBrokerList[x].m_BrokerScore = -50;
 		tBrokerList[x].m_ProfitPerShare = 0;
 		tBrokerList[x].m_TotalProfit = 0;
-		if (tBrokerList[x].m_TotalShareCount > 0)
+		tBrokerList[x].m_PercentReturn = 0;
+		if ((tBrokerList[x].m_TotalShareCount > m_TotalPriceCount*0.1)&&(tBrokerList[x].m_TotalShareCount < m_TotalPriceCount*0.9))
 		{
 			tBrokerList[x].m_TotalProfit = tBrokerList[x].m_NetWorth - (tBrokerList[x].m_BudgetPerMarket * tBrokerList[x].m_MarketCount);
-			tBrokerList[x].m_ProfitPerShare = tBrokerList[x].m_TotalProfit / tBrokerList[x].m_TotalShareCount;
+			tBrokerList[x].m_ProfitPerShare = tBrokerList[x].m_TotalProfit / (tBrokerList[x].m_TotalShareCount+1);
+			//tBrokerList[x].m_PercentReturn = tBrokerList[x].m_TotalProfit / abs((tBrokerList[x].m_TotalInvestment + 1));
+
+
+			double aAverageInvestment = tBrokerList[x].m_TotalInvestment / m_TotalPriceCount;
+			tBrokerList[x].m_PercentReturn = tBrokerList[x].m_TotalProfit / (aAverageInvestment * (m_TotalPriceCount / ONEYEAR));
+			
+
+
+			if (tBrokerList[x].m_PercentReturn > 10 || tBrokerList[x].m_PercentReturn < -10)
+			{
+				tBrokerList[x].m_PercentReturn = 0;
+			}
+			else if (tBrokerList[x].m_PercentReturn < 0.001 && tBrokerList[x].m_PercentReturn > -0.001)
+			{
+				tBrokerList[x].m_PercentReturn = 0;
+			}
 
 			aTotalProfithMean += tBrokerList[x].m_TotalProfit;
 			aProfitPerShareMean += tBrokerList[x].m_ProfitPerShare;
+
+			aPercentReturnMean += tBrokerList[x].m_PercentReturn;
 		}
 	}
 	aTotalProfithMean = aTotalProfithMean / tBrokerCount;
 	aProfitPerShareMean = aProfitPerShareMean / tBrokerCount;
+	aPercentReturnMean = aPercentReturnMean / tBrokerCount;
 
 	double aProfitPerShareDev = 0;
 	double atotalProfitDev = 0;
+	double aPercentReturnDev = 0;
 
 	for (int x = 0; x < tBrokerCount; x++)
 	{
 		aProfitPerShareDev += abs(aProfitPerShareMean - tBrokerList[x].m_ProfitPerShare);
 		atotalProfitDev += abs(aTotalProfithMean - tBrokerList[x].m_TotalProfit);
+		aPercentReturnDev += abs(aPercentReturnMean - tBrokerList[x].m_PercentReturn);
+		if (aPercentReturnDev > 10000000000)
+		{
+			x = x;
+		}
+
+		//aPercentReturnMean += tBrokerList[x].m_PercentReturn;
 	}
 	aProfitPerShareDev = aProfitPerShareDev / tBrokerCount;
 	atotalProfitDev = atotalProfitDev / tBrokerCount;
-
+	aPercentReturnDev = aPercentReturnDev / tBrokerCount;
+	
 	Broker aBestBroker = tBrokerList[0];
 	for (int x = 0; x < tBrokerCount; x++)
 	{
 		if (tBrokerList[x].m_TotalProfit != 0)
 		{
-			double aScore = ((tBrokerList[x].m_TotalProfit - aTotalProfithMean) / atotalProfitDev);
-			aScore += 3*((tBrokerList[x].m_ProfitPerShare - aProfitPerShareMean) / aProfitPerShareDev);
+			double aScore = 0;
+			aScore += ((tBrokerList[x].m_TotalProfit - aTotalProfithMean) / atotalProfitDev);
+			aScore += ((tBrokerList[x].m_ProfitPerShare - aProfitPerShareMean) / aProfitPerShareDev);
+
+			double aPercentRet = (tBrokerList[x].m_PercentReturn - aPercentReturnMean) / aPercentReturnDev;
+			if (aPercentRet > 4)
+			{
+				aPercentRet = 4;
+			}
+			aScore += aPercentRet;
+
+			tBrokerList[x].m_BrokerScore = aScore;
+/*
 			int aUsableMarketCount = m_TotalPriceCount - (ONEYEAR*m_MarketCount);
 			if ((tBrokerList[x].m_TotalShareCount > aUsableMarketCount / 20) && (tBrokerList[x].m_TotalShareCount < aUsableMarketCount / 2))
 			{
-				tBrokerList[x].m_BrokerScore = aScore;
 			}
 			else
 			{
 				tBrokerList[x].m_BrokerScore = aScore;
-			}
+			}*/
 		}
 		
 
-		if (aBestBroker.m_BrokerScore < tBrokerList[x].m_BrokerScore)
+		if ((aBestBroker.m_BrokerScore) < tBrokerList[x].m_BrokerScore)
 		{
 			aBestBroker = tBrokerList[x];
 		}
@@ -565,8 +752,8 @@ double SimControl::GetTime()
 std::string SimControl::LogBroker(Broker tBroker, std::string tMessage, bool tWrite)
 {
 	string aBrokerLog;
-	aBrokerLog += "$pS" + to_string(tBroker.m_ProfitPerShare) + ",\t$" + to_string(tBroker.m_TotalProfit) + ",\tB" + to_string(tBroker.m_Settings[0]* tBroker.m_Settings[1])
-		+ ",\tS" + to_string(tBroker.m_Settings[2]* tBroker.m_Settings[3]) + ",\tSC" + to_string(tBroker.m_TotalShareCount)+ ",\tNum" + to_string(tBroker.m_BrokerNum)
+	aBrokerLog += "$pS" + to_string(tBroker.m_ProfitPerShare) + ",\t$" + to_string(tBroker.m_TotalProfit) + ",\t%R" + to_string(tBroker.m_PercentReturn) + ",\tB" + to_string(tBroker.m_Settings[0] * tBroker.m_Settings[1])
+		+ ",\tS" + to_string(tBroker.m_Settings[2] * tBroker.m_Settings[3]) + ",\tSC" + to_string(tBroker.m_TotalShareCount) + ",\tNum" + to_string(tBroker.m_BrokerNum) + ",\tScore" + to_string(tBroker.m_BrokerScore)
 		+",\tGUID" + to_string(tBroker.m_BrokerGuid) + "\t\t";
 	
 	printf(("\n"+aBrokerLog + tMessage + "\n").c_str());

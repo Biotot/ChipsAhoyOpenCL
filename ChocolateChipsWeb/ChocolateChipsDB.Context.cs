@@ -29,9 +29,8 @@ namespace ChocolateChipsWeb
     
         public virtual DbSet<Action> Actions { get; set; }
         public virtual DbSet<Broker> Brokers { get; set; }
-        public virtual DbSet<PricePoint> PricePoints { get; set; }
-        public virtual DbSet<Summary> Summaries { get; set; }
         public virtual DbSet<Market> Markets { get; set; }
+        public virtual DbSet<Summary> Summaries { get; set; }
     
         public virtual int sp_ClenseMarkets()
         {
@@ -60,17 +59,26 @@ namespace ChocolateChipsWeb
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("sp_MarketView");
         }
     
-        public virtual int UpdateSummaries(Nullable<int> margin, Nullable<bool> betterThanMargin)
+        public virtual int UpdateSummaries(Nullable<int> high, Nullable<int> low, string sortType)
         {
-            var marginParameter = margin.HasValue ?
-                new ObjectParameter("Margin", margin) :
-                new ObjectParameter("Margin", typeof(int));
+            var highParameter = high.HasValue ?
+                new ObjectParameter("High", high) :
+                new ObjectParameter("High", typeof(int));
     
-            var betterThanMarginParameter = betterThanMargin.HasValue ?
-                new ObjectParameter("BetterThanMargin", betterThanMargin) :
-                new ObjectParameter("BetterThanMargin", typeof(bool));
+            var lowParameter = low.HasValue ?
+                new ObjectParameter("Low", low) :
+                new ObjectParameter("Low", typeof(int));
     
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("UpdateSummaries", marginParameter, betterThanMarginParameter);
+            var sortTypeParameter = sortType != null ?
+                new ObjectParameter("SortType", sortType) :
+                new ObjectParameter("SortType", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("UpdateSummaries", highParameter, lowParameter, sortTypeParameter);
+        }
+    
+        public virtual int LoadSummaryList()
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("LoadSummaryList");
         }
     }
 }

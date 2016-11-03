@@ -257,9 +257,6 @@
     <Compile Include="Models\sp_MarketView_Result.cs">
       <DependentUpon>MarketView.tt</DependentUpon>
     </Compile>
-    <Compile Include="PricePoint.cs">
-      <DependentUpon>ChocolateChipsDB.tt</DependentUpon>
-    </Compile>
     <Compile Include="Scripts\MarketSummary.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

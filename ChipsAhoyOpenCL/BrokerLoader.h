@@ -13,5 +13,7 @@ public:
 	~BrokerLoader();
 	std::vector<std::string> LoadSavedBrokers(std::string tFileName);
 	Broker ParseXML(std::string tFileName);
+
+	static Broker CreateDefaultBroker();
 };
 
