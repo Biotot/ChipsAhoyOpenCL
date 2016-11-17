@@ -96,6 +96,7 @@
           <Property Name="MarketDepth" Type="int" />
           <Property Name="MarketProfitPerShare" Type="decimal" Precision="18" Scale="2" />
           <Property Name="MarketPercentReturn" Type="float" />
+          <Property Name="MarketEndShareCount" Type="int" />
         </EntityType>
         <!--Errors Found During Generation:
 warning 6002: The table/view 'DBChocolateChips.dbo.Summary' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
@@ -141,17 +142,20 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
           <Property Name="MarketSymbol" Type="nvarchar" MaxLength="50" />
           <Property Name="Timestamp" Type="nvarchar" MaxLength="50" />
           <Property Name="SortType" Type="nvarchar" MaxLength="50" />
-          <Property Name="ScoreSum" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="AverageProfit" Type="float" />
+          <Property Name="AverageProfitPerShare" Type="float" />
+          <Property Name="AveragePercentReturn" Type="float" />
           <Property Name="BuyCount" Type="int" />
           <Property Name="SellCount" Type="int" />
-          <Property Name="Plus30" Type="decimal" Precision="10" Scale="2" />
-          <Property Name="Plus25" Type="decimal" Precision="10" Scale="2" />
-          <Property Name="Plus20" Type="decimal" Precision="10" Scale="2" />
-          <Property Name="Plus15" Type="decimal" Precision="10" Scale="2" />
-          <Property Name="Plus10" Type="decimal" Precision="10" Scale="2" />
-          <Property Name="Plus05" Type="decimal" Precision="10" Scale="2" />
-          <Property Name="Plus00" Type="decimal" Precision="10" Scale="2" />
-          <Property Name="Minus" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="Plus5" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="Plus4" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="Plus3" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="Plus2" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="Plus1" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="Plus0" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="Min1" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="Min2" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="Min10" Type="decimal" Precision="10" Scale="2" />
         </EntityType>-->
         <Function Name="LoadSummaryList" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
         <Function Name="sp_ClenseMarkets" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
@@ -303,6 +307,7 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
           <Property Name="MarketDepth" Type="Int32" />
           <Property Name="MarketProfitPerShare" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="MarketPercentReturn" Type="Double" />
+          <Property Name="MarketEndShareCount" Type="Int32" />
         </EntityType>
         <EntityType Name="Summary">
           <Key>
@@ -418,6 +423,7 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
           <EntitySetMapping Name="Markets">
             <EntityTypeMapping TypeName="DBChocolateChips.Market">
               <MappingFragment StoreEntitySet="Market">
+                <ScalarProperty Name="MarketEndShareCount" ColumnName="MarketEndShareCount" />
                 <ScalarProperty Name="MarketPercentReturn" ColumnName="MarketPercentReturn" />
                 <ScalarProperty Name="MarketProfitPerShare" ColumnName="MarketProfitPerShare" />
                 <ScalarProperty Name="MarketDepth" ColumnName="MarketDepth" />

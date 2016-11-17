@@ -40,3 +40,9 @@ typedef struct BrokerStruct {
 	int m_AlgorithmID;
 	int m_BrokerGuid;
 } Broker;
+
+typedef struct ConstQueueStruct {
+	int m_Queue[100];
+	int m_Front;
+	int m_Back;
+} ConstQueue;

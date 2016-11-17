@@ -69,7 +69,7 @@ void BruteBrokers(int tPlatform, int tDevice, int tBrokerCount)
 	while (true)
 	{
 		//for (int x = 10; x>2; x--)
-		for (int x = 3; x <10; x++)
+		for (int x = 10; x <15; x++)
 		{
 			if (tBrokerCount > 5)
 			{
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
 
 SimControl::SimControl()
 {
-	SetDefaultBroker();
+	//SetDefaultBroker();
 	//OpenCLLoad m_Loader;
 }
 
@@ -187,9 +187,10 @@ void SimControl::SetMarketList(int tSimDepth, int tPlatform, int tDevice, int tB
 	aMarketStringList = { "GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA", "NFLX", "TWTR", "MSFT", "GPRO", "BABA", "ZNGA", "VZ", "MYL", "CXW" , "^IXIC", "^GSPC", "^DJI",
 	"PG", "CHK", "DB" , "COTY" , "WFC" , "CTSH" , "SIRI" , "QCOM" , "WLL" , "CSCO" , "FCX" , "KR" , "DO" , "C" , "QQQ" , "NXPI" , "ECA" , "WFT" , "AA" , "NVFY" , "XNY" , "CNET" , "PYDS" , "PTCT" , "ITUS" , "MXC" ,
 		"LEJU" , "JTPY" , "TWER" , "AUPH" , "LXK" , "EBS", "DRNA", "WAC", "GBT", "EVI", "COOL", "BVX", "COLL", "IDRA", "PGNX", "SGM", "SPY", "EEM", "EWJ", "XLF", "GDX", "UVXY", "USO", "VXX", "IWM", "EFA",  "NUGT",
-	"UWTI", "EWZ", "XIV", "XOP", "XLP", "DGAZ", "JNUG", "GDXJ", "XLU", "XLE", "HYG", "TLT", "SLV", "XLI", "JNK", "TVIX", "IYR", "RSX", "XLK"};
+	"UWTI", "EWZ", "XIV", "XOP", "XLP", "DGAZ", "JNUG", "GDXJ", "XLU", "XLE", "HYG", "TLT", "SLV", "XLI", "JNK", "TVIX", "IYR", "RSX", "XLK",
+	"RCL", "LUV", "AL", "MAN", "BWA", "AC", "TERP", "GS", "LMT", "LC", "FDC", "SHOP", "M", "FTNT", "VECO", "ARLP", "BRC", "TIME", "ESRT", "SLG", "VNO"};
 
-	//vector<string> aMarketStringList = { "GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "WFC", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA"};
+	//aMarketStringList = { "GE", "F", "AMD", "INTC", "BAC","AMZN","GOOGL", "WFC", "AAPL", "YHOO", "CMCSA", "TWX", "TSLA"};
 	//aMarketStringList = { "GE" }; 
 	for (int x = 0; x < aMarketStringList.size(); x++)
 	{
@@ -248,6 +249,7 @@ void SimControl::RunBrute(int tSimDepth, int tBrokerCount)
 	int aInnnerSimCount = 55;
 	for (int x = 0; (x < aMaxTarget);)
 	{
+		bool aNewBest = false;
 		aRange = floor(500 * ((aMaxTarget - x) / aMaxTarget));
 		Broker aTempBroker = m_BestBroker;
 		aBrokerHerd = NaturalSelection(aBrokerHerd, tBrokerCount, aRange, "RAND", aInnnerSimCount);
@@ -255,7 +257,7 @@ void SimControl::RunBrute(int tSimDepth, int tBrokerCount)
 		x += aBrokerCount*aInnnerSimCount;
 		if ((m_BestBroker.m_TotalProfit != aTempBroker.m_TotalProfit) || (m_BestBroker.m_ProfitPerShare != aTempBroker.m_ProfitPerShare) || (m_BestBroker.m_PercentReturn != aTempBroker.m_PercentReturn))
 		{
-			aMaxTarget += aBrokerCount*aInnnerSimCount;//Skip a sim chunk
+			aNewBest = true;
 		}
 
 		LogBroker(m_BestBroker, " ", true);
@@ -265,7 +267,11 @@ void SimControl::RunBrute(int tSimDepth, int tBrokerCount)
 
 		if ((m_BestBroker.m_TotalProfit != aTempBroker.m_TotalProfit) || (m_BestBroker.m_ProfitPerShare != aTempBroker.m_ProfitPerShare) || (m_BestBroker.m_PercentReturn != aTempBroker.m_PercentReturn))
 		{
-			aMaxTarget += aBrokerCount*aInnnerSimCount;//Skip a sim chunk
+			aNewBest = true;
+		}
+		if (!aNewBest)
+		{
+			aMaxTarget -= aBrokerCount*aInnnerSimCount*2;//Skip a sim chunk
 		}
 		LogBroker(m_BestBroker, " [" + to_string(x) + " |/| " + to_string(aMaxTarget) + "]", true);
 	}
@@ -276,10 +282,17 @@ void SimControl::RunBrute(int tSimDepth, int tBrokerCount)
 	string aOutput = LogBroker(m_BestBroker, " BEST OF THE BEST", true);
 	Log(aOutput, true, "Best");
 
-
-	PrintBroker("Broker\\", m_BestBroker, to_string(tSimDepth));
-
-
+	if (m_BestBroker.m_TotalProfit < 0)
+	{
+		for (int x = 0; x < 10; x++)
+		{
+			printf("\nUnfortunately he is still terrible. He will fade into history in sadness");
+		}
+	}
+	else
+	{
+		PrintBroker("Broker\\", m_BestBroker, to_string(tSimDepth));
+	}
 
 }
 
@@ -416,7 +429,7 @@ void SimControl::PrintBroker(std::string tFilePath, Broker tPrintBroker,string t
 		MarketPrice* aMarketPriceDifference = new MarketPrice[m_MarketList[x].m_MarketPriceCount];
 		m_Loader.CalcMarketDifferences(m_MarketList[x].PriceList, aMarketPriceDifference, &m_MarketList[x].m_MarketPriceCount);
 		tPrintBroker.m_TotalInvestment = 0;
-		ptree aMarketDisplay = m_Loader.LogLongTermBroker(&tPrintBroker, m_MarketList[x], aMarketPriceDifference, true); //defaulting to true. Feature to return to later
+		ptree aMarketDisplay = m_Loader.LogShortTermBroker(&tPrintBroker, m_MarketList[x], aMarketPriceDifference, true, 10); //defaulting to true. Feature to return to later
 		aBrokerXML.add_child("Broker.MarketResult", aMarketDisplay);/*
 																	aProfit += (aTempBroker.m_NetWorth - (aTempBroker.m_BudgetPerMarket));
 																	aTotalShareCount += aTempBroker.m_TotalShareCount;*/
@@ -521,25 +534,32 @@ Broker SimControl::CalcDeviations(Broker* tBrokerList, int tBrokerCount)
 		tBrokerList[x].m_ProfitPerShare = 0;
 		tBrokerList[x].m_TotalProfit = 0;
 		tBrokerList[x].m_PercentReturn = 0;
-		if ((tBrokerList[x].m_TotalShareCount > m_TotalPriceCount*0.1)&&(tBrokerList[x].m_TotalShareCount < m_TotalPriceCount*0.9))
+		if ((tBrokerList[x].m_TotalShareCount > m_TotalPriceCount*0.01)&&(tBrokerList[x].m_TotalShareCount < m_TotalPriceCount*0.99))
 		{
 			tBrokerList[x].m_TotalProfit = tBrokerList[x].m_NetWorth - (tBrokerList[x].m_BudgetPerMarket * tBrokerList[x].m_MarketCount);
 			tBrokerList[x].m_ProfitPerShare = tBrokerList[x].m_TotalProfit / (tBrokerList[x].m_TotalShareCount+1);
-			//tBrokerList[x].m_PercentReturn = tBrokerList[x].m_TotalProfit / abs((tBrokerList[x].m_TotalInvestment + 1));
-
 
 			double aAverageInvestment = tBrokerList[x].m_TotalInvestment / m_TotalPriceCount;
 			tBrokerList[x].m_PercentReturn = tBrokerList[x].m_TotalProfit / (aAverageInvestment * (m_TotalPriceCount / ONEYEAR));
 			
-
-
-			if (tBrokerList[x].m_PercentReturn > 10 || tBrokerList[x].m_PercentReturn < -10)
+			//I have to cap these. These fixes are not solutions to bad evolutions
+			if (tBrokerList[x].m_PercentReturn > 2)
 			{
-				tBrokerList[x].m_PercentReturn = 0;
+				tBrokerList[x].m_PercentReturn = -10;
 			}
-			else if (tBrokerList[x].m_PercentReturn < 0.001 && tBrokerList[x].m_PercentReturn > -0.001)
+			if (tBrokerList[x].m_TotalProfit > tBrokerList[x].m_MarketCount * 1000000)
 			{
-				tBrokerList[x].m_PercentReturn = 0;
+				tBrokerList[x].m_TotalProfit = -1000000;
+			}
+			if (tBrokerList[x].m_ProfitPerShare > 1000000)
+			{
+				tBrokerList[x].m_ProfitPerShare = -1000000;
+			}
+
+			//Need to evolve better instead of clubbing the unfit ones.
+			if ((tBrokerList[x].m_PercentReturn > 0) && (tBrokerList[x].m_TotalProfit < 0))
+			{
+				tBrokerList[x].m_PercentReturn = -10;
 			}
 
 			aTotalProfithMean += tBrokerList[x].m_TotalProfit;
@@ -561,12 +581,6 @@ Broker SimControl::CalcDeviations(Broker* tBrokerList, int tBrokerCount)
 		aProfitPerShareDev += abs(aProfitPerShareMean - tBrokerList[x].m_ProfitPerShare);
 		atotalProfitDev += abs(aTotalProfithMean - tBrokerList[x].m_TotalProfit);
 		aPercentReturnDev += abs(aPercentReturnMean - tBrokerList[x].m_PercentReturn);
-		if (aPercentReturnDev > 10000000000)
-		{
-			x = x;
-		}
-
-		//aPercentReturnMean += tBrokerList[x].m_PercentReturn;
 	}
 	aProfitPerShareDev = aProfitPerShareDev / tBrokerCount;
 	atotalProfitDev = atotalProfitDev / tBrokerCount;
@@ -578,26 +592,29 @@ Broker SimControl::CalcDeviations(Broker* tBrokerList, int tBrokerCount)
 		if (tBrokerList[x].m_TotalProfit != 0)
 		{
 			double aScore = 0;
-			aScore += ((tBrokerList[x].m_TotalProfit - aTotalProfithMean) / atotalProfitDev);
-			aScore += ((tBrokerList[x].m_ProfitPerShare - aProfitPerShareMean) / aProfitPerShareDev);
-
+			
+			double aTotalProfitRet = ((tBrokerList[x].m_TotalProfit - aTotalProfithMean) / atotalProfitDev);
+			double aProfitPerShareRet = ((tBrokerList[x].m_ProfitPerShare - aProfitPerShareMean) / aProfitPerShareDev);
 			double aPercentRet = (tBrokerList[x].m_PercentReturn - aPercentReturnMean) / aPercentReturnDev;
+
+			if (aTotalProfitRet > 4)
+			{
+				aTotalProfitRet = 4;
+			}
+			if (aProfitPerShareRet > 4)
+			{
+				aProfitPerShareRet = 4;
+			}
 			if (aPercentRet > 4)
 			{
 				aPercentRet = 4;
 			}
 			aScore += aPercentRet;
+			aScore += aProfitPerShareRet;
+			aScore += aPercentRet;
 
 			tBrokerList[x].m_BrokerScore = aScore;
-/*
-			int aUsableMarketCount = m_TotalPriceCount - (ONEYEAR*m_MarketCount);
-			if ((tBrokerList[x].m_TotalShareCount > aUsableMarketCount / 20) && (tBrokerList[x].m_TotalShareCount < aUsableMarketCount / 2))
-			{
-			}
-			else
-			{
-				tBrokerList[x].m_BrokerScore = aScore;
-			}*/
+
 		}
 		
 

@@ -41,6 +41,61 @@ typedef struct BrokerStruct {
 	int m_AlgorithmID;
 	int m_BrokerGuid;
 } Broker;
+typedef struct ConstQueueStruct {
+	int m_Queue[100];
+	int m_Front;
+	int m_Back;
+
+} ConstQueue;
+
+ConstQueue CreateQueue()
+{
+	ConstQueue aQueue;
+	aQueue.m_Front = 0;
+	aQueue.m_Back = 0;
+	for (int x=0; x<100; x++)
+	{
+		aQueue.m_Queue[x]=0;
+	}
+	return aQueue;
+};
+
+bool AddRear(ConstQueue *tConstQueue, int tTarget)
+{
+	int aNewIndex = tConstQueue->m_Back+1;
+	if (aNewIndex > 99)
+	{
+		aNewIndex = 0;
+	}
+	if (aNewIndex != tConstQueue->m_Front)
+	{
+
+		tConstQueue->m_Queue[tConstQueue->m_Back] = tTarget;
+		tConstQueue->m_Back=aNewIndex;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool RemoveFront(ConstQueue *tConstQueue)
+{
+	if (tConstQueue->m_Front != tConstQueue->m_Back)
+	{
+		tConstQueue->m_Queue[tConstQueue->m_Front] = 0;
+		tConstQueue->m_Front++;
+		if (tConstQueue->m_Front > 99)
+		{
+			tConstQueue->m_Front = 0;
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 void kernel TestRun(global Broker* tBrokerList, global const MarketPrice* tMarketPriceList, global const int* tMarketPriceCount)
 {
@@ -289,35 +344,37 @@ void kernel LongTerm(global Broker* tBrokerList, global const MarketPrice* tMark
 
 }
 
-void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMarketPriceList, global const int* tMarketPriceCount, global const MarketPrice* tMarketDifferenceList, global const int tHoldDays)
+void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMarketPriceList, global const int* tMarketPriceCount, global const MarketPrice* tMarketDifferenceList, global const int* tHoldDays)
 {
+
 
 	Broker aSimBroker = tBrokerList[get_global_id(0)];
 	aSimBroker.m_BrokerNum = get_global_id(0);
-	aSimBroker.m_AlgorithmID = 10;
+	aSimBroker.m_AlgorithmID = 102;
 	aSimBroker.m_Investment = 0;
 	aSimBroker.m_Budget = aSimBroker.m_BudgetPerMarket;
 	aSimBroker.m_ShareCount = 0;
 	Market aMarket;
 	int aOldestStock = 0;
-
 	int aMarketStockCount = 0;
 
 	
 	double aBuyPoint = aSimBroker.m_Settings[0] * aSimBroker.m_Settings[1];
-
-	//aSellPoint is unused.
+	
 	double aSellPoint = aSimBroker.m_Settings[2] * aSimBroker.m_Settings[3];
 
 	if (aBuyPoint < aSellPoint)
 	{
 		aSellPoint = aBuyPoint;
 	}
+	ConstQueue aPurchaseQueue = CreateQueue();
+
 
 	for (int y = 1; y < tMarketPriceCount[0]; y++)
 	{
 		bool aValid = true;
 		bool aBuy = false;
+		bool aSell = false;
 		bool aSellSplit = false;
 		bool aSellEnd = false;
 
@@ -336,6 +393,7 @@ void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMar
 				aSellSplit = true;//Sell Split
 				aValid = false;
 			}
+
 		}
 
 		if (aValid)
@@ -386,7 +444,7 @@ void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMar
 			aDecisionPoint += aDClose.m_Avg6Month*aSimBroker.m_Settings[30];
 			aDecisionPoint += aDClose.m_Avg1Year*aSimBroker.m_Settings[31];
 
-			
+
 			PriceAverage aDVolume;
 			aDVolume = tMarketDifferenceList[y].m_Close;
 			//aDVolume = CalcDPrice(tMarketPriceList[y].m_Volume, tMarketPriceList[y - 1].m_Volume);
@@ -397,7 +455,7 @@ void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMar
 			aDecisionPoint += aDVolume.m_Avg3Month*aSimBroker.m_Settings[29];
 			aDecisionPoint += aDVolume.m_Avg6Month*aSimBroker.m_Settings[30];
 			aDecisionPoint += aDVolume.m_Avg1Year*aSimBroker.m_Settings[31];
-			
+
 			aDecisionPoint += (aDOpen.m_Price - aDOpen.m_Avg5Day)*aSimBroker.m_Settings[32];
 			aDecisionPoint += (aDOpen.m_Avg5Day - aDOpen.m_Avg15Day)*aSimBroker.m_Settings[33];
 			aDecisionPoint += (aDOpen.m_Avg15Day - aDOpen.m_Avg30Day)*aSimBroker.m_Settings[34];
@@ -430,9 +488,9 @@ void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMar
 			{
 				aBuy = true;//Buy
 			}
-			if ((aDecisionPoint < aSellPoint))
+			if ((aDecisionPoint < aSellPoint)||(aPurchaseQueue.m_Queue[aPurchaseQueue.m_Front] == y))
 			{
-				aSell = true;//Sell
+				aSell = true;
 			}
 			if (y == tMarketPriceCount[0] - 1)
 			{
@@ -441,51 +499,57 @@ void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMar
 
 		}
 
+
 		if (aBuy)
 		{
 			if (aSimBroker.m_Budget > tMarketPriceList[y].m_Close.m_Price)
 			{
-				//BUY STOCK THEN SELL IT IN tHoldDays time
-				aSimBroker.m_ShareCount++;
-				aSimBroker.m_TotalShareCount++;
-				aSimBroker.m_Budget -= tMarketPriceList[y].m_Close.m_Price;
-				aSimBroker.m_Investment += tMarketPriceList[y].m_Close.m_Price;
+				if (AddRear(&aPurchaseQueue, y + tHoldDays))
+				{
+					if (!aSell)
+					{
+						aSimBroker.m_Investment += tMarketPriceList[y].m_Close.m_Price;
 
-				//if ((tHoldDays+y) > tMarketPriceCount 
+						aSimBroker.m_ShareCount++;
+						aSimBroker.m_TotalShareCount++;
+						aSimBroker.m_Budget -= tMarketPriceList[y].m_Close.m_Price;
+					}
 
+				}
 			}
 		}
+
+		//Check if the front of the purchase queue is set to sell today
 		if (aSell)
 		{
 
 			if (aSimBroker.m_ShareCount > 0)
 			{
-				aSimBroker.m_Investment -= tMarketPriceList[y].m_Close.m_Price;
-				//aSimBroker.m_TotalInvestment -= tMarketPriceList[y].m_Close.m_Price;
-				aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price;
-				aSimBroker.m_ShareCount--;
-				aOldestStock = y;
+				
+				if (RemoveFront(&aPurchaseQueue))
+				{
+					if (!aBuy)
+					{
+						aSimBroker.m_Investment -= tMarketPriceList[y].m_Close.m_Price;
+
+						aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price;
+						aSimBroker.m_ShareCount--;
+					}
+				}
+				
 			}
-		}
-		if (aSellOld)
-		{
-			aSimBroker.m_Investment = 0;
-			//aSimBroker.m_TotalInvestment -= tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
-			aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
-			aSimBroker.m_ShareCount = 0;
-			aOldestStock = y;
 		}
 		if (aSellSplit)
 		{
-			//aSimBroker.m_TotalInvestment -= tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount;
+			aSimBroker.m_Investment = 0;
+
 			aSimBroker.m_Budget += tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_ShareCount = 0;
-			aOldestStock = y;
-			aSimBroker.m_Investment = 0;
+			//Resetting the queue
+			aPurchaseQueue = CreateQueue();
 		}
 		if (aSellEnd)
 		{
-			//aSimBroker.m_TotalInvestment += aSimBroker.m_Investment;
 			aSimBroker.m_Investment = 0;
 
 			aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
@@ -494,7 +558,6 @@ void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMar
 			aSimBroker.m_ShareCount = 0;
 			aOldestStock = y;
 		}
-
 		aSimBroker.m_TotalInvestment += aSimBroker.m_Investment;
 	}
 	

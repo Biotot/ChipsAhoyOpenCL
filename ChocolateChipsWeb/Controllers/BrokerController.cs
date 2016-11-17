@@ -63,7 +63,7 @@ namespace ChocolateChipsWeb.Controllers
                     //if (aDB.Actions.Count() > 1000000)
                     try
                     {
-                        aDB.Database.ExecuteSqlCommand("sp_PurgeDatabase");
+                        //aDB.Database.ExecuteSqlCommand("sp_PurgeDatabase");
                         aPass = true;
                     }
                     catch (Exception e)
@@ -79,45 +79,67 @@ namespace ChocolateChipsWeb.Controllers
                 ManualResetEvent[] aHandleList = new ManualResetEvent[aFileList.Count()];
                 m_ThreadList = new List<Thread>();
                 int aThreadIndex = 0;
-                int aActiveCount = 10;
-                for (int y = 0; y < aFileList.Count() - 1; y++)
-                {
-                    aHandleList[y] = new ManualResetEvent(false);
-                    Console.WriteLine(y + " of " + aFileList.Count());
-                    Thread aThread = new Thread(x => ParseXML(aFileList[y]));
-                    aThread.Start();
-                    m_ThreadList.Add(aThread);
+                int aActiveCount = 1;
 
-                    if (aThreadIndex<aFileList.Count())
-                    {
-                        if (y > aThreadIndex + aActiveCount)
-                        {
-                            m_ThreadList[aThreadIndex].Join();
-                            aThreadIndex++;
-                        }
-                    }
+
+                Thread aThread = new Thread(x => ParseXMLList(aFileList));
+                aThread.Start();
+                
+                //for (int y = 0; y < aFileList.Count() - 1; y++)
+                //{
+                   // ParseXML(aFileList[y]);
+
+                    //aHandleList[y] = new ManualResetEvent(false);
+                    //Console.WriteLine(y + " of " + aFileList.Count());
+                    //Thread aThread = new Thread(x => ParseXML(aFileList[y]));
+                    //aThread.Start();
+                    //m_ThreadList.Add(aThread);
+
+                    //if (aThreadIndex<aFileList.Count())
+                    //{
+                    //    if (y > aThreadIndex + aActiveCount)
+                    //    {
+                    //        m_ThreadList[aThreadIndex].Join();
+                    //        aThreadIndex++;
+                    //    }
+                    //}
 
                     //Thread.Sleep(500);
-                }
+               // }
 
                 //WaitHandle.WaitAll(aHandleList);
-                for (int x = aThreadIndex+1; x < m_ThreadList.Count(); x++)
-                {
-                    m_ThreadList[x].Join();
+                //for (int x = aThreadIndex+1; x < m_ThreadList.Count(); x++)
+                //{
+                //    m_ThreadList[x].Join();
 
-                }
+                //}
 
-                aDB.Database.ExecuteSqlCommand("LoadSummaryList");
+                //aDB.Database.ExecuteSqlCommand("LoadSummaryList");
+                
                 //aDB.sp_ClenseMarkets();
                 //aDB.Database.ExecuteSqlCommand("sp_ClenseMarkets");
             }
         }
 
+        public static void ParseXMLList(String[] tFileList)
+        {
+            for (int y = 0; y < tFileList.Count() - 1; y++)
+            {
+                ParseXML(tFileList[y]);
+            }
+
+            using (DBBroker aDB = new DBBroker())
+            {
+                aDB.Database.CommandTimeout = 120;
+                aDB.Database.ExecuteSqlCommand("LoadSummaryList");
+            }
+        }
 
         public static void ParseXML(String tFile)
         {
             StringBuilder aRet = new StringBuilder();
-
+            String aDate = "";
+            DateTime aLatestDate = new DateTime(0);
             using (DBBroker aDBContext = new DBBroker())
             {
 
@@ -152,26 +174,22 @@ namespace ChocolateChipsWeb.Controllers
                                     aReader.Read();
                                     aCurrentBroker.Broker_GUID = aReader.Value;
 
-                                    bool aDeleted = false;
+                                    //Get the latest date for an action
+                                    
 
-                                    //while (!aDeleted)
-                                    //{
-                                    //    try
-                                    //    {
+                                    var aTopAction = (from aAction in aDBContext.Actions where aAction.BrokerGUID == aCurrentBroker.Broker_GUID orderby aAction.TimeStamp descending select aAction);
+                                    if (aTopAction.Count() > 0)
+                                    {
 
-                                    //        //aDBContext.Actions.Where(aAction => aAction.BrokerGUID == aCurrentBroker.Broker_GUID).del;
-                                    //        //aDBContext.Actions.RemoveRange(aDBContext.Actions.Where(aAction => aAction.BrokerGUID.Equals(aCurrentBroker.Broker_GUID)));
-                                    //        //aDBContext.Brokers.RemoveRange(aDBContext.Brokers.Where(aBroker => aBroker.Broker_GUID.Equals(aCurrentBroker.Broker_GUID)));
-                                    //        //aDBContext.Markets.RemoveRange(aDBContext.Markets.Where(aMarket => aMarket.BrokerGUID.Equals(aCurrentBroker.Broker_GUID)));
-                                    //        //aDBContext.SaveChanges();
-                                    //        aDeleted = true;
-                                    //    }
-                                    //    catch (Exception e)
-                                    //    {
+                                        aDate = aTopAction.First().TimeStamp;
+                                        aLatestDate = Convert.ToDateTime(aDate);
+                                    }
 
-                                    //    }
-                                    //}
+                                    int aMarketTest = aDBContext.Database.ExecuteSqlCommand("Delete from Market where BrokerGUID = " + aCurrentBroker.Broker_GUID);
+                                    int aBrokerTest = aDBContext.Database.ExecuteSqlCommand("Delete from Broker where Broker_GUID = " + aCurrentBroker.Broker_GUID);
                                     break;
+
+                                    
 
                                 case "TotalProfit":
                                     aReader.Read();
@@ -429,13 +447,8 @@ namespace ChocolateChipsWeb.Controllers
                                                 aCurrentAction.Investment = double.Parse(aReader.GetAttribute("Investment"));
                                                 aCurrentAction.Budget = double.Parse(aReader.GetAttribute("Budget"));
                                                 aCurrentAction.Value = aCurrentAction.ShareCount * aCurrentAction.Price;
-
-
-                                                // int aActionInsert = 
+                                                
                                                 aActionList.Add(aCurrentAction);
-                                                aFullActionList.Add(aCurrentAction);
-                                                //aActionInsert.
-                                                // aActionInsert.Start();
                                             }
 
 
@@ -474,6 +487,12 @@ namespace ChocolateChipsWeb.Controllers
                                                             {
                                                                 aCurrentMarket.MarketProfitPerShare = 0;
                                                             }
+                                                        }
+                                                        else if (aReader.Name == "EndShareCount")
+                                                        {
+                                                            aReader.Read();
+                                                            aCurrentMarket.MarketEndShareCount = int.Parse(aReader.Value);
+
                                                         }
                                                         else if (aReader.Name == "PercentReturn")
                                                         {
@@ -520,15 +539,16 @@ namespace ChocolateChipsWeb.Controllers
 
                                         for (int x = aActionList.Count - 1; x >= 0; x--)
                                         {
+                                            DateTime aActionTime = Convert.ToDateTime(aActionList[x].TimeStamp);
 
-                                            //if (CheckAction(aActionList[x], aDBContext))
-                                            //{
-                                            //    //aDBContext.Actions.Add(aActionList[x]);
-                                            //}
-                                            //else
-                                            //{
-                                            //    break;
-                                            //}
+                                            if (aActionTime > aLatestDate)
+                                            {
+                                                aFullActionList.Add(aActionList[x]);
+                                            }
+                                            else
+                                            {
+                                                break;
+                                            }
                                         }
 
                                     }
@@ -540,22 +560,7 @@ namespace ChocolateChipsWeb.Controllers
                         }
 
                     }
-
-                    for (int x = aMarketList.Count - 1; x >= 0; x--)
-                    {
-
-                        //if (CheckMarket(aMarketList[x], aDBContext))
-                        //{
-                        //    //aDBContext.Markets.Add(aMarketList[x]);
-                        //}
-                        //else
-                        //{
-                        //    break;
-                        //}
-                    }
-
-                    CheckBroker(aCurrentBroker, aDBContext);
-                    //aDBContext.Brokers.Add(aCurrentBroker);
+                    
 
                     IEnumerable<System.Data.Entity.Validation.DbEntityValidationResult> aList = aDBContext.GetValidationErrors();
                     if (aList.Count() > 0)
@@ -564,49 +569,14 @@ namespace ChocolateChipsWeb.Controllers
                     }
 
                     int aFailCount = 0;
-                    for (bool aPass = false; !aPass;)
+                    for (bool aPass = false; !aPass; )
                     {
 
                         try
                         {
                             aDBContext.BulkInsert(aFullActionList);
-                            aPass = true;
-                        }
-                        catch (Exception e)
-                        {
-                            aFailCount++;
-                            Thread.Sleep(1000*aFailCount);
-                            if (aFailCount > 1)
-                            {
-                                Console.WriteLine("WTF");
-                            }
-                        }
-                    }
-                    for (bool aPass = false; !aPass; )
-                    {
-
-                        try
-                        {
                             aDBContext.BulkInsert(aMarketList);
-                            aPass = true;
-                        }
-                        catch (Exception e)
-                        {
-                            aFailCount++;
-                            Thread.Sleep(1000 * aFailCount);
-                            if (aFailCount > 1)
-                            {
-                                Console.WriteLine("WTF");
-                            }
-                        }
-                    }
-                    for (bool aPass = false; !aPass; )
-                    {
-
-                        try
-                        {
                             aDBContext.Brokers.Add(aCurrentBroker);
-                            aDBContext.SaveChanges();
                             aPass = true;
                         }
                         catch (Exception e)
@@ -619,8 +589,10 @@ namespace ChocolateChipsWeb.Controllers
                             }
                         }
                     }
+                    
 
 
+                    aDBContext.SaveChanges();
                 }
 
             }
@@ -726,31 +698,6 @@ namespace ChocolateChipsWeb.Controllers
         {
             bool aRet = false;
             List<Action> aActionList = new List<Action>();
-
-            //aActionList = await (from aAction in SContext.Actions
-            //   where   aAction.TimeStamp.Equals(tAction.TimeStamp)
-            //   &&       aAction.Action1.Equals(tAction.Action1)
-            //   &&       aAction.BrokerGUID.Equals(tAction.BrokerGUID)
-            //   &&       aAction.MarketSymbol.Equals(tAction.MarketSymbol)
-            //            select aAction).ToListAsync();
-            //bool aRetQuery = false;
-            //while (false)//!aRetQuery)
-            //{
-            //    try
-            //    {
-            //        aActionList = (from aAction in aDBContext.Actions
-            //                       where aAction.TimeStamp.Equals(tAction.TimeStamp)
-            //                       && aAction.Action1.Equals(tAction.Action1)
-            //                       && aAction.BrokerGUID.Equals(tAction.BrokerGUID)
-            //                       && aAction.MarketSymbol.Equals(tAction.MarketSymbol)
-            //                       select aAction).ToList();
-            //        aRetQuery = true;
-            //    }
-            //    catch(Exception e)
-            //    {
-
-            //    }
-            //}
 
             if (aActionList.Count == 0)
             {

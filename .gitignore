@@ -81,6 +81,10 @@ ipch/
 *.sdf
 *.cachefile
 *.VC.db
+*.db
+*.sdf
+*.xml
+*.csv
 
 # Visual Studio profiler
 *.psess
@@ -243,3 +247,4 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/ChipsAhoyOpenCL/Markets

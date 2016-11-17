@@ -7,7 +7,7 @@
       <Diagram DiagramId="620f74a0b63e4e98a572a444f5e5c8d7" Name="Diagram1" ZoomLevel="76">
         <EntityTypeShape EntityType="DBChocolateChips.Action" Width="1.5" PointX="0.75" PointY="0.75" />
         <EntityTypeShape EntityType="DBChocolateChips.Broker" Width="1.5" PointX="2.75" PointY="0.75" />
-        <EntityTypeShape EntityType="DBChocolateChips.Market" Width="1.5" PointX="4.75" PointY="4.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBChocolateChips.Market" Width="2.125" PointX="4.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="DBChocolateChips.Summary" Width="1.5" PointX="7.375" PointY="0.75" />
       </Diagram>
     </edmx:Diagrams>

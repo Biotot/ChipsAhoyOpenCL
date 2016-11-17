@@ -87,85 +87,6 @@ void OpenCLLoad::Setup(int tPlatform, int tDevice)
 	}
 } 
 
-void OpenCLLoad::TestRun(Broker* tBrokerList, int tBrokerCount, Market* tMarketList, int tMarketCount)
-{
-	cl::Context aContext({ m_Device });
-	cl::Program::Sources aSource;
-
-	aSource.push_back({ m_KernalCode.c_str(),m_KernalCode.length() });
-
-	cl::Program program(aContext, aSource);
-	if (program.build({ m_Device }) != CL_SUCCESS) {
-		std::cout << " Error building: " << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(m_Device) << "\n";
-		system("PAUSE");
-		exit(1);
-	}
-
-	int aTotalPriceCount = tMarketCount;
-	for (int x = 0; x < tMarketCount; x++)
-	{
-		aTotalPriceCount += tMarketList[x].m_MarketPriceCount;
-	}
-	MarketPrice *aPriceList = new MarketPrice[aTotalPriceCount];
-	MarketPrice aDefaultPrice;
-	aDefaultPrice.m_Open.m_Price = 0;
-
-	int aCurrentIndex = 0;
-	for (int x = 0; x < tMarketCount; x++)
-	{
-		for (int y = 0; y < tMarketList[x].m_MarketPriceCount; y++)
-		{
-			aPriceList[aCurrentIndex] = tMarketList[x].PriceList[y];
-			aCurrentIndex++;
-		}
-		aPriceList[aCurrentIndex] = aDefaultPrice;
-		aCurrentIndex++;
-	}
-
-	// create buffers on the device
-	cl::Buffer aBrokerBuffer(aContext, CL_MEM_READ_WRITE, sizeof(Broker)*tBrokerCount);
-	cl::Buffer aPriceBuffer(aContext, CL_MEM_READ_WRITE, sizeof(MarketPrice)*aTotalPriceCount);
-	cl::Buffer aPriceCountBuffer(aContext, CL_MEM_READ_WRITE, sizeof(int));
-
-
-	//create queue to which we will push commands for the device.
-	cl::CommandQueue queue(aContext, m_Device);
-
-	//write arrays A and B to the device
-	queue.enqueueWriteBuffer(aBrokerBuffer, CL_TRUE, 0, sizeof(Broker)*tBrokerCount, tBrokerList);
-	queue.enqueueWriteBuffer(aPriceBuffer, CL_TRUE, 0, sizeof(MarketPrice)*aTotalPriceCount, aPriceList);
-	queue.enqueueWriteBuffer(aPriceCountBuffer, CL_TRUE, 0, sizeof(int), &aTotalPriceCount);
-
-	//alternative way to run the kernel
-	cl::Kernel kernel_add = cl::Kernel(program, "FullRun4");
-	kernel_add.setArg(0, aBrokerBuffer);
-	kernel_add.setArg(1, aPriceBuffer);
-	kernel_add.setArg(2, aPriceCountBuffer);
-	//kernel_add.setArg(2,buffer_C);
-	queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(tBrokerCount), cl::NullRange);
-	queue.finish();
-
-	//read result C from the device to array C
-	queue.enqueueReadBuffer(aBrokerBuffer, CL_TRUE, 0, sizeof(Broker)*tBrokerCount, tBrokerList);
-
-	int aCurrentMarketIndex = 0;
-	aCurrentIndex = 0;
-	for (int x = 0; x < aTotalPriceCount; x++)
-	{
-		if (aPriceList[x].m_Open.m_Price==0)
-		{
-			aCurrentMarketIndex++;
-			aCurrentIndex = 0;
-		}
-		else
-		{
-			tMarketList[aCurrentMarketIndex].PriceList[aCurrentIndex] = aPriceList[x];
-			aCurrentIndex++;
-		}
-	}
-
-	delete aPriceList;
-}
 
 void OpenCLLoad::LoadMarkets(Market* tMarketList, int tMarketCount, int tBrokerCount)
 {
@@ -175,6 +96,10 @@ void OpenCLLoad::LoadMarkets(Market* tMarketList, int tMarketCount, int tBrokerC
 	
 	m_Queue.enqueueReleaseGLObjects();
 	m_BrokerBuffer = cl::Buffer(m_Context, CL_MEM_READ_WRITE, sizeof(Broker)*tBrokerCount);
+	m_HoldDaysBuffer = cl::Buffer(m_Context, CL_MEM_READ_WRITE, sizeof(int));
+
+	int aHoldDays = 10;
+	m_Queue.enqueueWriteBuffer(m_HoldDaysBuffer, CL_TRUE, 0, sizeof(int), &aHoldDays);
 	cl_int aResult;
 	for (int x = 0; x < tMarketCount; x++)
 	{
@@ -228,15 +153,15 @@ void OpenCLLoad::RunBrokers(Broker* tBrokerList, int tBrokerCount)
 
 	for (int x = 0; x < m_MarketBufferList.size(); x++)
 	{
-		cl::Kernel kernel_add = cl::Kernel(m_Program, "LongTerm");
+		cl::Kernel kernel_add = cl::Kernel(m_Program, "ShortTerm");
 		kernel_add.setArg(0, m_BrokerBuffer);
 		kernel_add.setArg(1, m_MarketBufferList[x]);
 		kernel_add.setArg(2, m_CountBufferList[x]);
 		kernel_add.setArg(3, m_MarketDifferenceBufferList[x]);
-		//vector<cl::Memory, std::allocator<cl::Memory>> aBuffer;
-		//m_Queue.enqueueAcquireGLObjects(&aBuffer, NULL, NULL);
+		kernel_add.setArg(4, m_HoldDaysBuffer);
 		aResult = m_Queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(tBrokerCount), cl::NullRange);
-		//m_Queue.enqueueReleaseGLObjects(&aBuffer, NULL, NULL);
+
+
 		if (aResult != CL_SUCCESS)
 		{
 			cout << "FAILED TO ENQUEUE NEW TASK:  " + aResult << endl;
@@ -259,6 +184,56 @@ void OpenCLLoad::RunBrokers(Broker* tBrokerList, int tBrokerCount)
 	}*/
 
 }
+
+ConstQueue OpenCLLoad::CreateQueue()
+{
+	ConstQueue aQueue;
+	aQueue.m_Front = 0;
+	aQueue.m_Back = 0;
+	for (int x = 0; x<100; x++)
+	{
+		aQueue.m_Queue[x] = 0;
+	}
+	return aQueue;
+};
+
+bool OpenCLLoad::AddRear(ConstQueue *tConstQueue, int tTarget)
+{
+	int aNewIndex = tConstQueue->m_Back+1;
+	if (aNewIndex > 99)
+	{
+		aNewIndex = 0;
+	}
+	if (aNewIndex != tConstQueue->m_Front)
+	{
+
+		tConstQueue->m_Queue[tConstQueue->m_Back] = tTarget;
+		tConstQueue->m_Back=aNewIndex;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool OpenCLLoad::RemoveFront(ConstQueue *tConstQueue)
+{
+	if (tConstQueue->m_Front != tConstQueue->m_Back)
+	{
+		tConstQueue->m_Queue[tConstQueue->m_Front] = 0;
+		tConstQueue->m_Front++;
+		if (tConstQueue->m_Front > 99)
+		{
+			tConstQueue->m_Front = 0;
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 
 PriceAverage OpenCLLoad::CalcDPrice(PriceAverage tCurrentDay, PriceAverage tPrevDay)
 {
@@ -605,30 +580,33 @@ ptree OpenCLLoad::LogShortTermBroker(Broker *tBroker, Market tMarket, MarketPric
 	MarketPrice *tMarketPriceList;
 	tMarketPriceList = tMarket.PriceList;
 	double aInvestment = 0;
-	int aOldestStock = 0;
 	aSimBroker.m_Budget = aSimBroker.m_BudgetPerMarket;
 	aSimBroker.m_NetWorth = 0;
 	aSimBroker.m_Investment = 0;
 	int aMarketStockCount = 0;
 
 
-	std::vector<int> aSellDate;
-
+	//aSellDate.assign()
 	ptree aMarketXML;
 	aMarketXML.add("MarketActions.<xmlattr>.Name", string(tMarket.m_MarketName).substr(0, 15));
 	aMarketXML.add("MarketActions.<xmlattr>.Depth", tMarket.m_MarketPriceCount);
 
-
-
+	ConstQueue aPurchaseQueue = CreateQueue();
 	double aBuyPoint = aSimBroker.m_Settings[0] * aSimBroker.m_Settings[1];
 
+	double aSellPoint = aSimBroker.m_Settings[2] * aSimBroker.m_Settings[3];
+
+	if (aBuyPoint < aSellPoint)
+	{
+		aSellPoint = aBuyPoint;
+	}
 	//No sell point;
 
 	for (int y = 1; y < tMarket.m_MarketPriceCount; y++)
 	{
 		bool aValid = true;
 		bool aBuy = false;
-		bool aSellOld = false;
+		bool aSell = false;
 		bool aSellSplit = false;
 		bool aSellEnd = false;
 
@@ -648,11 +626,6 @@ ptree OpenCLLoad::LogShortTermBroker(Broker *tBroker, Market tMarket, MarketPric
 				aValid = false;
 			}
 
-			if (aOldestStock + 30 < y)
-			{
-				aSellOld = true;//Sell Old
-				aValid = false;
-			}
 		}
 
 		if (aValid)
@@ -747,6 +720,10 @@ ptree OpenCLLoad::LogShortTermBroker(Broker *tBroker, Market tMarket, MarketPric
 			{
 				aBuy = true;//Buy
 			}
+			if ((aDecisionPoint < aSellPoint)||(aPurchaseQueue.m_Queue[aPurchaseQueue.m_Front] == y))
+			{
+				aSell = true;
+			}
 			if (y == tMarket.m_MarketPriceCount - 1)
 			{
 				aSellEnd = true;//Sell End
@@ -759,69 +736,75 @@ ptree OpenCLLoad::LogShortTermBroker(Broker *tBroker, Market tMarket, MarketPric
 		{
 			if (aSimBroker.m_Budget > tMarketPriceList[y].m_Close.m_Price)
 			{
-				aSimBroker.m_Investment += tMarketPriceList[y].m_Close.m_Price;
-				//aSimBroker.m_TotalInvestment += tMarketPriceList[y].m_Close.m_Price;
+				if (AddRear(&aPurchaseQueue, y + tHoldDays))
+				{
+					if (!aSell)
+					{
+						aSimBroker.m_Investment += tMarketPriceList[y].m_Close.m_Price;
 
-				string aTimestamp(tMarketPriceList[y].m_Timestamp);
-				string aAction = "Buy";
-				ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
-				aMarketXML.add_child("MarketActions.Action", aNode);
+						string aTimestamp(tMarketPriceList[y].m_Timestamp);
+						string aAction = "Buy";
+						ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
+						aMarketXML.add_child("MarketActions.Action", aNode);
 
-				aSimBroker.m_ShareCount++;
-				aSimBroker.m_TotalShareCount++;
-				aSimBroker.m_Budget -= tMarketPriceList[y].m_Close.m_Price;
-				aOldestStock = y;
+						aSimBroker.m_ShareCount++;
+						aSimBroker.m_TotalShareCount++;
+						aSimBroker.m_Budget -= tMarketPriceList[y].m_Close.m_Price;
+					}
+
+				}
 			}
 		}
-		std::vector<int> aSellDate;
-		//if (aSell)
+
+		//Check if the front of the purchase queue is set to sell today
+		if (aSell)
 		{
 
 			if (aSimBroker.m_ShareCount > 0)
 			{
-				string aTimestamp(tMarketPriceList[y].m_Timestamp);
-				string aAction = "Sell";
-				ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
-				aMarketXML.add_child("MarketActions.Action", aNode);
-				Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aSimBroker.m_Investment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
-				aSimBroker.m_Investment -= tMarketPriceList[y].m_Close.m_Price;
-				//aSimBroker.m_TotalInvestment -= tMarketPriceList[y].m_Close.m_Price;
+				
+				if (RemoveFront(&aPurchaseQueue))
+				{
+					if (!aBuy)
+					{
+						string aTimestamp(tMarketPriceList[y].m_Timestamp);
+						string aAction = "Sell";
+						ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
+						aMarketXML.add_child("MarketActions.Action", aNode);
+						Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aSimBroker.m_Investment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
+						
+						aSimBroker.m_Investment -= tMarketPriceList[y].m_Close.m_Price;
+						aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price;
+						aSimBroker.m_ShareCount--;
+					}
+					else
+					{
+						string aTimestamp(tMarketPriceList[y].m_Timestamp);
+						string aAction = "Hold";
+						ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
+						aMarketXML.add_child("MarketActions.Action", aNode);
+						Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aSimBroker.m_Investment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
 
-				aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price;
-				aSimBroker.m_ShareCount--;
-				aOldestStock = y;
+					}
+				}
+				
 			}
-		}
-		if (aSellOld)
-		{
-			string aTimestamp(tMarketPriceList[y].m_Timestamp);
-			string aAction = "Sell OLD";
-			ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
-			aMarketXML.add_child("MarketActions.Action", aNode);
-			Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aSimBroker.m_Investment) + " : " + to_string((tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
-
-			//aSimBroker.m_TotalInvestment -= tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount; 
-			aSimBroker.m_Investment = 0;
-
-			aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
-			aSimBroker.m_ShareCount = 0;
-			aOldestStock = y;
 		}
 		if (aSellSplit)
 		{
+
 			string aTimestamp(tMarketPriceList[y].m_Timestamp);
 			string aAction = "Sell SPLIT";
 			ptree aNode = CreateNode(aAction, aTimestamp, aSimBroker.m_Budget, tMarketPriceList[y].m_Close.m_Price, aSimBroker.m_ShareCount, aSimBroker.m_Investment, tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount);
 			aMarketXML.add_child("MarketActions.Action", aNode);
 			Log(aAction + ": " + aTimestamp.substr(0, 15) + " : " + to_string(tMarketPriceList[y - 1].m_Close.m_Price) + " : " + to_string(aSimBroker.m_ShareCount) + " : " + to_string(aSimBroker.m_Investment) + " : " + to_string((tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount)), aMarketName);
 
-			//aSimBroker.m_TotalInvestment -= tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount; 
 			aSimBroker.m_Investment = 0;
 
-			//aSimBroker.m_ShareCount += aSimBroker.m_ShareCount;
 			aSimBroker.m_Budget += tMarketPriceList[y - 1].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_ShareCount = 0;
-			aOldestStock = y;
+			//Resetting the queue
+			aPurchaseQueue = CreateQueue();
 		}
 		if (aSellEnd)
 		{
@@ -836,8 +819,6 @@ ptree OpenCLLoad::LogShortTermBroker(Broker *tBroker, Market tMarket, MarketPric
 			aSimBroker.m_Budget += tMarketPriceList[y].m_Close.m_Price * aSimBroker.m_ShareCount;
 			aSimBroker.m_NetWorth = aSimBroker.m_Budget;
 			aSimBroker.m_Budget = aSimBroker.m_BudgetPerMarket;
-			aSimBroker.m_ShareCount = 0;
-			aOldestStock = y;
 		}
 		aSimBroker.m_TotalInvestment += aSimBroker.m_Investment;
 	}
@@ -847,6 +828,7 @@ ptree OpenCLLoad::LogShortTermBroker(Broker *tBroker, Market tMarket, MarketPric
 	ptree aMarketDetails;
 	aMarketDetails.add("Profit", aProfit);
 	aMarketDetails.add("ShareCount", aSimBroker.m_TotalShareCount);
+	aMarketDetails.add("EndShareCount", aSimBroker.m_ShareCount);
 	if (aSimBroker.m_TotalShareCount > 0)
 	{
 		aMarketDetails.add("ProfitPerShare", aProfit / aSimBroker.m_TotalShareCount);
@@ -916,14 +898,14 @@ void OpenCLLoad::Log(string tMessage, string tMarketName, bool tAppend)
 	ofstream myfile;
 	if (tAppend)
 	{
-		myfile.open("Markets\\" + aMarketName + "MarketResult.txt", std::fstream::app);
+		//myfile.open("Markets\\" + aMarketName + "MarketResult.txt", std::fstream::app);
 	}
 	else
 	{
-		myfile.open("Markets\\" + aMarketName + "MarketResult.txt");
+		//myfile.open("Markets\\" + aMarketName + "MarketResult.txt");
 	}
-	myfile << tMessage << endl;
-	myfile.close();
+	//myfile << tMessage << endl;
+	//myfile.close();
 }
 
 ptree OpenCLLoad::CreateNode(string tBrokerAction, string tTimeStamp, double tBudget, double aPrice, int tShareCount, double tInvestment, double tValue)

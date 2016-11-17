@@ -27,6 +27,7 @@ public:
 	cl::Program m_Program;
 	string m_KernalCode;
 	cl::Buffer m_BrokerBuffer;
+	cl::Buffer m_HoldDaysBuffer;
 	vector<cl::Buffer> m_MarketBufferList;
 	vector<cl::Buffer> m_MarketDifferenceBufferList;
 	vector<cl::Buffer> m_CountBufferList;
@@ -35,11 +36,14 @@ public:
 	~OpenCLLoad();
 	void RunBrokers(Broker* tBrokerList, int tBrokerCount);
 	void CalcMarketDifferences(const MarketPrice* tMarketPriceList, MarketPrice* tMarketChanges, const int *tMarketPriceCount);
-	void TestRun(Broker* tBrokerList, int tBrokerCount, Market* tMarketList, int tMarketCount);
 	boost::property_tree::ptree LogLongTermBroker(Broker *tBroker, Market tMarket, MarketPrice* tMarketDifferenceList, bool tDisplayActions);
 	boost::property_tree::ptree LogShortTermBroker(Broker *tBroker, Market tMarket, MarketPrice* tMarketDifferenceList, bool tDisplayActions, int tHoldDays);
 	void Log(string tMessage, string tMarketName, bool tAppend=true);
 	PriceAverage CalcDPrice(PriceAverage tCurrentDay, PriceAverage tPrevDay);
+	ConstQueue CreateQueue();
+	bool AddRear(ConstQueue *tConstQueue, int tTarget);
+	bool RemoveFront(ConstQueue *tConstQueue);
+
 	void LoadMarkets(Market* tMarketList, int tMarketCount, int tBrokerCount);
 	boost::property_tree::ptree CreateNode(string tBrokerAction, string tTimeStamp, double tBudget, double aPrice, int tShareCount, double tInvestment, double tValue);
 };
