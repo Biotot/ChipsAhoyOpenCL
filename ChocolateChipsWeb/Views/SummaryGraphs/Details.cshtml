@@ -1,0 +1,130 @@
+﻿@model ChocolateChipsWeb.SummaryGraph
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>SummaryGraph</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.MarketSymbol)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MarketSymbol)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Timestamp)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Timestamp)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ClosePrice)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClosePrice)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Score)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Score)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.BuyPercent)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BuyPercent)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SellPercent)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SellPercent)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ShareCapacity)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ShareCapacity)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ActionCount)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ActionCount)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AverageProfitPerShare)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AverageProfitPerShare)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AverageProfit)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AverageProfit)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AveragePercentReturn)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AveragePercentReturn)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProfitPerShareDeviation)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProfitPerShareDeviation)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PercentReturnDeviation)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PercentReturnDeviation)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.BrokerCount)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BrokerCount)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.SummaryID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

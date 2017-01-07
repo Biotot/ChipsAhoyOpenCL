@@ -98,7 +98,7 @@ void OpenCLLoad::LoadMarkets(Market* tMarketList, int tMarketCount, int tBrokerC
 	m_BrokerBuffer = cl::Buffer(m_Context, CL_MEM_READ_WRITE, sizeof(Broker)*tBrokerCount);
 	m_HoldDaysBuffer = cl::Buffer(m_Context, CL_MEM_READ_WRITE, sizeof(int));
 
-	int aHoldDays = 10;
+	int aHoldDays = 20;
 	m_Queue.enqueueWriteBuffer(m_HoldDaysBuffer, CL_TRUE, 0, sizeof(int), &aHoldDays);
 	cl_int aResult;
 	for (int x = 0; x < tMarketCount; x++)
@@ -620,7 +620,7 @@ ptree OpenCLLoad::LogShortTermBroker(Broker *tBroker, Market tMarket, MarketPric
 		if ((aSimBroker.m_ShareCount > 0))
 		{
 			//Just assume a stock would never lose half it's value over night
-			if (aValid && ((tMarketPriceList[y - 1].m_Close.m_Price / tMarketPriceList[y].m_Open.m_Price) > 1.9))
+			if (aValid && (((tMarketPriceList[y - 1].m_Close.m_Price / tMarketPriceList[y].m_Open.m_Price) > 1.9) || (tMarketPriceList[y - 1].m_Close.m_Price / tMarketPriceList[y].m_Open.m_Price) < 0.52))
 			{
 				aSellSplit = true;//Sell Split
 				aValid = false;

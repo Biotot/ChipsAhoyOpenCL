@@ -5,6 +5,46 @@ MarketLoader::MarketLoader()
 {
 }
 
+
+/*
+While price averageing 
+
+
+Routes:
+
+Adjust all previous prices by split scale.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+
+
+
+
+
+
+
+
 MarketLoader::MarketLoader(string tMarketName, int tYear, int tMarketNum)
 {
 
@@ -80,6 +120,9 @@ MarketLoader::MarketLoader(string tMarketName, int tYear, int tMarketNum)
 	m_Market.PriceList = new MarketPrice[aLineCount];
 	for (int x = 0; !aMarketPriceVector.empty(); x++)
 	{
+		//2016-12-07                 
+		//19970305
+		//m_Market.PriceList[x].m_Timestamp
 		m_Market.PriceList[x] = aMarketPriceVector.back();
 		aMarketPriceVector.pop_back();
 	}

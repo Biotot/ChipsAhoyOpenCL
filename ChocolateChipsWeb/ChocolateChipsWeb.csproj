@@ -98,12 +98,28 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
+    <Reference Include="System.Web.DataVisualization">
+      <HintPath>..\packages\Microsoft.Chart.Controls.3.5.30729\lib\net35\System.Web.DataVisualization.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.DataVisualization.Design">
+      <HintPath>..\packages\Microsoft.Chart.Controls.3.5.30729\lib\net35\System.Web.DataVisualization.Design.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Windows.Forms.DataVisualization">
+      <HintPath>..\packages\Microsoft.Chart.Controls.3.5.30729\lib\net35\System.Windows.Forms.DataVisualization.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms.DataVisualization.Design">
+      <HintPath>..\packages\Microsoft.Chart.Controls.3.5.30729\lib\net35\System.Windows.Forms.DataVisualization.Design.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
@@ -231,6 +247,7 @@
     <Compile Include="Controllers\BrokerController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\SummaryGraphsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -279,6 +296,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Summary.cs">
+      <DependentUpon>ChocolateChipsDB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="SummaryGraph.cs">
       <DependentUpon>ChocolateChipsDB.tt</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -351,6 +371,7 @@
     </EntityDeploy>
     <Content Include="ChocolateChipsDB.edmx.diagram">
       <DependentUpon>ChocolateChipsDB.edmx</DependentUpon>
+      <SubType>Designer</SubType>
     </Content>
     <EntityDeploy Include="Scripts\MarketSummary.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
@@ -383,7 +404,9 @@
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
-    <Content Include="Views\Web.config" />
+    <Content Include="Views\Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
@@ -411,6 +434,13 @@
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Broker\Index.cshtml" />
+    <Content Include="Views\SummaryGraphs\Create.cshtml" />
+    <Content Include="Views\SummaryGraphs\Delete.cshtml" />
+    <Content Include="Views\SummaryGraphs\Details.cshtml" />
+    <Content Include="Views\SummaryGraphs\Edit.cshtml" />
+    <Content Include="Views\SummaryGraphs\Index.cshtml" />
+    <Content Include="Views\SummaryGraphs\GraphView.cshtml" />
+    <Content Include="Views\SummaryGraphs\ChartData.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

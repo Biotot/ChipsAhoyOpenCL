@@ -17,7 +17,8 @@ public:
 	Market* m_MarketList;
 	int m_TotalPriceCount;
 	OpenCLLoad m_Loader;
-
+	int m_Platform;
+	int m_Device;
 	ChipsDB m_DB;
 
 	SimControl();
@@ -33,7 +34,7 @@ public:
 	//Broker CalcDeviations(std::vector<Broker> tBrokerList, int tBrokerCount);
 	boost::property_tree::ptree BrokerSettingsToNode(Broker tBroker);
 	void RunBrute(int tSimDepth, int tBrokerCount);
-	void SimControl::UpdateBrokers(vector<std::string> tBrokerFileList, int tConcurentBrokers);
+	void SimControl::UpdateBrokers(vector<std::string> tBrokerFileList);
 	void SetDefaultBroker();
 	vector<Broker> NaturalSelection(vector<Broker> &tBrokerHerd, int tBrokerCount, int tRange, string tMutateType, int tLoopCount);
 	void PrintBroker(std::string tFilePath, Broker tPrintBroker, string tSuffix);

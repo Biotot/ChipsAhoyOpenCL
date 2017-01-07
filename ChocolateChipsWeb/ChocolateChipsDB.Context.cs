@@ -31,6 +31,7 @@ namespace ChocolateChipsWeb
         public virtual DbSet<Broker> Brokers { get; set; }
         public virtual DbSet<Market> Markets { get; set; }
         public virtual DbSet<Summary> Summaries { get; set; }
+        public virtual DbSet<SummaryGraph> SummaryGraphs { get; set; }
     
         public virtual int sp_ClenseMarkets()
         {
@@ -59,7 +60,7 @@ namespace ChocolateChipsWeb
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("sp_MarketView");
         }
     
-        public virtual int UpdateSummaries(Nullable<int> high, Nullable<int> low, string sortType)
+        public virtual int UpdateSummaries(Nullable<int> high, Nullable<int> low)
         {
             var highParameter = high.HasValue ?
                 new ObjectParameter("High", high) :
@@ -69,11 +70,7 @@ namespace ChocolateChipsWeb
                 new ObjectParameter("Low", low) :
                 new ObjectParameter("Low", typeof(int));
     
-            var sortTypeParameter = sortType != null ?
-                new ObjectParameter("SortType", sortType) :
-                new ObjectParameter("SortType", typeof(string));
-    
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("UpdateSummaries", highParameter, lowParameter, sortTypeParameter);
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("UpdateSummaries", highParameter, lowParameter);
         }
     
         public virtual int LoadSummaryList()

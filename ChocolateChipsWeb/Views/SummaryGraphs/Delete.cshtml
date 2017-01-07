@@ -1,0 +1,136 @@
+﻿@model ChocolateChipsWeb.SummaryGraph
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>SummaryGraph</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.MarketSymbol)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MarketSymbol)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Timestamp)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Timestamp)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ClosePrice)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClosePrice)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Score)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Score)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.BuyPercent)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BuyPercent)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SellPercent)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SellPercent)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ShareCapacity)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ShareCapacity)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ActionCount)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ActionCount)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AverageProfitPerShare)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AverageProfitPerShare)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AverageProfit)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AverageProfit)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AveragePercentReturn)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AveragePercentReturn)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProfitPerShareDeviation)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProfitPerShareDeviation)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PercentReturnDeviation)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PercentReturnDeviation)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.BrokerCount)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BrokerCount)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

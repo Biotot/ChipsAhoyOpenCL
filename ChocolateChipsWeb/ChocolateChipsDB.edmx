@@ -107,7 +107,9 @@ warning 6002: The table/view 'DBChocolateChips.dbo.Summary' does not have a prim
           <Property Name="SummaryID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="MarketSymbol" Type="nvarchar" MaxLength="50" />
           <Property Name="Timestamp" Type="nvarchar" MaxLength="50" />
+          <Property Name="ClosePrice" Type="float" />
           <Property Name="BuyCount" Type="int" />
+          <Property Name="HoldCount" Type="int" />
           <Property Name="SellCount" Type="int" />
           <Property Name="ActionCount" Type="int" />
           <Property Name="AverageProfitPerShare" Type="float" />
@@ -118,6 +120,8 @@ warning 6002: The table/view 'DBChocolateChips.dbo.Summary' does not have a prim
           <Property Name="PercentReturnDeviation" Type="float" />
           <Property Name="High" Type="float" />
           <Property Name="Low" Type="float" />
+          <Property Name="AverageShareCount" Type="float" />
+          <Property Name="BrokerCount" Type="int" />
         </EntityType>
         <!--Errors Found During Generation:
 warning 6013: The table/view 'DBChocolateChips.dbo.Price_Overview' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
@@ -142,10 +146,13 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
           <Property Name="MarketSymbol" Type="nvarchar" MaxLength="50" />
           <Property Name="Timestamp" Type="nvarchar" MaxLength="50" />
           <Property Name="SortType" Type="nvarchar" MaxLength="50" />
+          <Property Name="Expr1" Type="float" />
           <Property Name="AverageProfit" Type="float" />
           <Property Name="AverageProfitPerShare" Type="float" />
           <Property Name="AveragePercentReturn" Type="float" />
+          <Property Name="AvgShareCount" Type="float" />
           <Property Name="BuyCount" Type="int" />
+          <Property Name="HoldCount" Type="int" />
           <Property Name="SellCount" Type="int" />
           <Property Name="Plus5" Type="decimal" Precision="10" Scale="2" />
           <Property Name="Plus4" Type="decimal" Precision="10" Scale="2" />
@@ -156,7 +163,30 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
           <Property Name="Min1" Type="decimal" Precision="10" Scale="2" />
           <Property Name="Min2" Type="decimal" Precision="10" Scale="2" />
           <Property Name="Min10" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="BrokerCount" Type="int" />
         </EntityType>-->
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'DBChocolateChips.dbo.SummaryGraphs' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="SummaryGraphs">
+          <Key>
+            <PropertyRef Name="SummaryID" />
+          </Key>
+          <Property Name="SummaryID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MarketSymbol" Type="nvarchar" MaxLength="50" />
+          <Property Name="Timestamp" Type="nvarchar" MaxLength="50" />
+          <Property Name="ClosePrice" Type="float" />
+          <Property Name="Score" Type="float" />
+          <Property Name="BuyPercent" Type="decimal" Precision="23" Scale="11" />
+          <Property Name="SellPercent" Type="decimal" Precision="23" Scale="11" />
+          <Property Name="ShareCapacity" Type="float" />
+          <Property Name="ActionCount" Type="int" />
+          <Property Name="AverageProfitPerShare" Type="float" />
+          <Property Name="AverageProfit" Type="float" />
+          <Property Name="AveragePercentReturn" Type="float" />
+          <Property Name="ProfitPerShareDeviation" Type="float" />
+          <Property Name="PercentReturnDeviation" Type="float" />
+          <Property Name="BrokerCount" Type="int" />
+        </EntityType>
         <Function Name="LoadSummaryList" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
         <Function Name="sp_ClenseMarkets" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
         <Function Name="sp_MarketView" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
@@ -168,7 +198,6 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
         <Function Name="UpdateSummaries" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="High" Type="int" Mode="In" />
           <Parameter Name="Low" Type="int" Mode="In" />
-          <Parameter Name="SortType" Type="nvarchar" Mode="In" />
         </Function>
         <EntityContainer Name="DBChocolateChipsStoreContainer">
           <EntitySet Name="Action" EntityType="Self.Action" Schema="dbo" store:Type="Tables" />
@@ -179,7 +208,9 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
     [Summary].[SummaryID] AS [SummaryID], 
     [Summary].[MarketSymbol] AS [MarketSymbol], 
     [Summary].[Timestamp] AS [Timestamp], 
+    [Summary].[ClosePrice] AS [ClosePrice], 
     [Summary].[BuyCount] AS [BuyCount], 
+    [Summary].[HoldCount] AS [HoldCount], 
     [Summary].[SellCount] AS [SellCount], 
     [Summary].[ActionCount] AS [ActionCount], 
     [Summary].[AverageProfitPerShare] AS [AverageProfitPerShare], 
@@ -189,8 +220,29 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
     [Summary].[ProfitPerShareDeviation] AS [ProfitPerShareDeviation], 
     [Summary].[PercentReturnDeviation] AS [PercentReturnDeviation], 
     [Summary].[High] AS [High], 
-    [Summary].[Low] AS [Low]
+    [Summary].[Low] AS [Low], 
+    [Summary].[AverageShareCount] AS [AverageShareCount], 
+    [Summary].[BrokerCount] AS [BrokerCount]
     FROM [dbo].[Summary] AS [Summary]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="SummaryGraphs" EntityType="Self.SummaryGraphs" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [SummaryGraphs].[SummaryID] AS [SummaryID], 
+    [SummaryGraphs].[MarketSymbol] AS [MarketSymbol], 
+    [SummaryGraphs].[Timestamp] AS [Timestamp], 
+    [SummaryGraphs].[ClosePrice] AS [ClosePrice], 
+    [SummaryGraphs].[Score] AS [Score], 
+    [SummaryGraphs].[BuyPercent] AS [BuyPercent], 
+    [SummaryGraphs].[SellPercent] AS [SellPercent], 
+    [SummaryGraphs].[ShareCapacity] AS [ShareCapacity], 
+    [SummaryGraphs].[ActionCount] AS [ActionCount], 
+    [SummaryGraphs].[AverageProfitPerShare] AS [AverageProfitPerShare], 
+    [SummaryGraphs].[AverageProfit] AS [AverageProfit], 
+    [SummaryGraphs].[AveragePercentReturn] AS [AveragePercentReturn], 
+    [SummaryGraphs].[ProfitPerShareDeviation] AS [ProfitPerShareDeviation], 
+    [SummaryGraphs].[PercentReturnDeviation] AS [PercentReturnDeviation], 
+    [SummaryGraphs].[BrokerCount] AS [BrokerCount]
+    FROM [dbo].[SummaryGraphs] AS [SummaryGraphs]</DefiningQuery>
           </EntitySet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
@@ -211,10 +263,10 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
           <FunctionImport Name="UpdateSummaries">
             <Parameter Name="High" Mode="In" Type="Int32" />
             <Parameter Name="Low" Mode="In" Type="Int32" />
-            <Parameter Name="SortType" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="LoadSummaryList" />
           <EntitySet Name="Summaries" EntityType="DBChocolateChips.Summary" />
+          <EntitySet Name="SummaryGraphs" EntityType="DBChocolateChips.SummaryGraph" />
         </EntityContainer>
         <EntityType Name="Action">
           <Key>
@@ -327,6 +379,30 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
           <Property Name="PercentReturnDeviation" Type="Double" />
           <Property Name="High" Type="Double" />
           <Property Name="Low" Type="Double" />
+          <Property Name="ClosePrice" Type="Double" />
+          <Property Name="HoldCount" Type="Int32" />
+          <Property Name="AverageShareCount" Type="Double" />
+          <Property Name="BrokerCount" Type="Int32" />
+        </EntityType>
+        <EntityType Name="SummaryGraph">
+          <Key>
+            <PropertyRef Name="SummaryID" />
+          </Key>
+          <Property Name="SummaryID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MarketSymbol" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Timestamp" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ClosePrice" Type="Double" />
+          <Property Name="Score" Type="Double" />
+          <Property Name="BuyPercent" Type="Decimal" Precision="23" Scale="11" />
+          <Property Name="SellPercent" Type="Decimal" Precision="23" Scale="11" />
+          <Property Name="ShareCapacity" Type="Double" />
+          <Property Name="ActionCount" Type="Int32" />
+          <Property Name="AverageProfitPerShare" Type="Double" />
+          <Property Name="AverageProfit" Type="Double" />
+          <Property Name="AveragePercentReturn" Type="Double" />
+          <Property Name="ProfitPerShareDeviation" Type="Double" />
+          <Property Name="PercentReturnDeviation" Type="Double" />
+          <Property Name="BrokerCount" Type="Int32" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -440,6 +516,10 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
           <EntitySetMapping Name="Summaries">
             <EntityTypeMapping TypeName="DBChocolateChips.Summary">
               <MappingFragment StoreEntitySet="Summary">
+                <ScalarProperty Name="BrokerCount" ColumnName="BrokerCount" />
+                <ScalarProperty Name="AverageShareCount" ColumnName="AverageShareCount" />
+                <ScalarProperty Name="HoldCount" ColumnName="HoldCount" />
+                <ScalarProperty Name="ClosePrice" ColumnName="ClosePrice" />
                 <ScalarProperty Name="Low" ColumnName="Low" />
                 <ScalarProperty Name="High" ColumnName="High" />
                 <ScalarProperty Name="PercentReturnDeviation" ColumnName="PercentReturnDeviation" />
@@ -451,6 +531,27 @@ warning 6013: The table/view 'DBChocolateChips.dbo.Summary_Overview' does not ha
                 <ScalarProperty Name="ActionCount" ColumnName="ActionCount" />
                 <ScalarProperty Name="SellCount" ColumnName="SellCount" />
                 <ScalarProperty Name="BuyCount" ColumnName="BuyCount" />
+                <ScalarProperty Name="Timestamp" ColumnName="Timestamp" />
+                <ScalarProperty Name="MarketSymbol" ColumnName="MarketSymbol" />
+                <ScalarProperty Name="SummaryID" ColumnName="SummaryID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SummaryGraphs">
+            <EntityTypeMapping TypeName="DBChocolateChips.SummaryGraph">
+              <MappingFragment StoreEntitySet="SummaryGraphs">
+                <ScalarProperty Name="BrokerCount" ColumnName="BrokerCount" />
+                <ScalarProperty Name="PercentReturnDeviation" ColumnName="PercentReturnDeviation" />
+                <ScalarProperty Name="ProfitPerShareDeviation" ColumnName="ProfitPerShareDeviation" />
+                <ScalarProperty Name="AveragePercentReturn" ColumnName="AveragePercentReturn" />
+                <ScalarProperty Name="AverageProfit" ColumnName="AverageProfit" />
+                <ScalarProperty Name="AverageProfitPerShare" ColumnName="AverageProfitPerShare" />
+                <ScalarProperty Name="ActionCount" ColumnName="ActionCount" />
+                <ScalarProperty Name="ShareCapacity" ColumnName="ShareCapacity" />
+                <ScalarProperty Name="SellPercent" ColumnName="SellPercent" />
+                <ScalarProperty Name="BuyPercent" ColumnName="BuyPercent" />
+                <ScalarProperty Name="Score" ColumnName="Score" />
+                <ScalarProperty Name="ClosePrice" ColumnName="ClosePrice" />
                 <ScalarProperty Name="Timestamp" ColumnName="Timestamp" />
                 <ScalarProperty Name="MarketSymbol" ColumnName="MarketSymbol" />
                 <ScalarProperty Name="SummaryID" ColumnName="SummaryID" />

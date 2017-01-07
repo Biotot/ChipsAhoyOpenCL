@@ -12,25 +12,22 @@ namespace ChocolateChipsWeb
     using System;
     using System.Collections.Generic;
     
-    public partial class Summary
+    public partial class SummaryGraph
     {
         public int SummaryID { get; set; }
         public string MarketSymbol { get; set; }
         public string Timestamp { get; set; }
-        public Nullable<int> BuyCount { get; set; }
-        public Nullable<int> SellCount { get; set; }
+        public Nullable<double> ClosePrice { get; set; }
+        public Nullable<double> Score { get; set; }
+        public Nullable<decimal> BuyPercent { get; set; }
+        public Nullable<decimal> SellPercent { get; set; }
+        public Nullable<double> ShareCapacity { get; set; }
         public Nullable<int> ActionCount { get; set; }
         public Nullable<double> AverageProfitPerShare { get; set; }
         public Nullable<double> AverageProfit { get; set; }
         public Nullable<double> AveragePercentReturn { get; set; }
-        public string SortType { get; set; }
         public Nullable<double> ProfitPerShareDeviation { get; set; }
         public Nullable<double> PercentReturnDeviation { get; set; }
-        public Nullable<double> High { get; set; }
-        public Nullable<double> Low { get; set; }
-        public Nullable<double> ClosePrice { get; set; }
-        public Nullable<int> HoldCount { get; set; }
-        public Nullable<double> AverageShareCount { get; set; }
         public Nullable<int> BrokerCount { get; set; }
     }
 }

@@ -130,7 +130,7 @@ namespace ChocolateChipsWeb.Controllers
 
             using (DBBroker aDB = new DBBroker())
             {
-                aDB.Database.CommandTimeout = 120;
+                aDB.Database.CommandTimeout = 300;
                 aDB.Database.ExecuteSqlCommand("LoadSummaryList");
             }
         }
@@ -176,12 +176,10 @@ namespace ChocolateChipsWeb.Controllers
 
                                     //Get the latest date for an action
                                     
-
-                                    var aTopAction = (from aAction in aDBContext.Actions where aAction.BrokerGUID == aCurrentBroker.Broker_GUID orderby aAction.TimeStamp descending select aAction);
-                                    if (aTopAction.Count() > 0)
+                                    if (aDBContext.Actions.Count((x => x.BrokerGUID == aCurrentBroker.Broker_GUID))>0)
                                     {
-
-                                        aDate = aTopAction.First().TimeStamp;
+                                        var aTopAction = (from aAction in aDBContext.Actions where aAction.BrokerGUID == aCurrentBroker.Broker_GUID orderby aAction.TimeStamp descending select aAction).First();
+                                        aDate = aTopAction.TimeStamp;
                                         aLatestDate = Convert.ToDateTime(aDate);
                                     }
 

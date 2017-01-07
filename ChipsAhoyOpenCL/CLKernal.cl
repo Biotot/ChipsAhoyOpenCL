@@ -348,6 +348,7 @@ void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMar
 {
 
 
+
 	Broker aSimBroker = tBrokerList[get_global_id(0)];
 	aSimBroker.m_BrokerNum = get_global_id(0);
 	aSimBroker.m_AlgorithmID = 102;
@@ -388,7 +389,7 @@ void kernel ShortTerm(global Broker* tBrokerList, global const MarketPrice* tMar
 		if ((aSimBroker.m_ShareCount > 0))
 		{
 			//Just assume a stock would never lose half it's value over night
-			if (aValid && ((tMarketPriceList[y - 1].m_Close.m_Price / tMarketPriceList[y].m_Open.m_Price) > 1.9))
+			if (aValid && (((tMarketPriceList[y - 1].m_Close.m_Price / tMarketPriceList[y].m_Open.m_Price) > 1.9) || (tMarketPriceList[y - 1].m_Close.m_Price / tMarketPriceList[y].m_Open.m_Price) < 0.52))
 			{
 				aSellSplit = true;//Sell Split
 				aValid = false;

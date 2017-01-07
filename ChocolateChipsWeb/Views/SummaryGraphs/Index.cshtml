@@ -1,0 +1,111 @@
+﻿@model IEnumerable<ChocolateChipsWeb.SummaryGraph>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.MarketSymbol)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Timestamp)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ClosePrice)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Score)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BuyPercent)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SellPercent)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ShareCapacity)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ActionCount)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AverageProfitPerShare)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AverageProfit)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AveragePercentReturn)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ProfitPerShareDeviation)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PercentReturnDeviation)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BrokerCount)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.MarketSymbol)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Timestamp)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ClosePrice)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Score)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BuyPercent)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SellPercent)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ShareCapacity)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ActionCount)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AverageProfitPerShare)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AverageProfit)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AveragePercentReturn)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProfitPerShareDeviation)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PercentReturnDeviation)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BrokerCount)
+        </td>
+        <td>
+            @Html.ActionLink("GraphView", "GraphView", new { id = item.SummaryID })
+        </td>
+    </tr>
+}
+
+</table>
